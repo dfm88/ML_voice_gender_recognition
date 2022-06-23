@@ -317,6 +317,72 @@ def split_db_2to1(D, L, seed=0):
     LTE = L[idxTest]
     return (DTR, LTR), (DTE, LTE)
 
+def load_bniary_train_data(fname, nr_features):
+    DList = []
+    labelsList = []
+    hLabels = {}
+
+    # for i in range(nr_features):
+    #     hLabels[f'feature_{i+1}'] = i
+
+    with open(fname) as f:
+        for line in f:
+            try:
+                attrs = line.split(',')[0:nr_features]
+                attrs = colv(np.array([float(i) for i in attrs]))
+                label = line.split(',')[-1].strip()
+                DList.append(attrs)
+                labelsList.append(label)
+            except:
+                pass
+
+    return np.hstack(DList), np.array(labelsList, dtype=np.int32)
+
+
+def _setup_data_plot(D, L, nr_features, positive_c_name, negative_c_name):
+    D0 = D[:, L==0]
+    D1 = D[:, L==1]
+    features_dict = {}
+
+    for i in range(nr_features):
+        features_dict[i] = f'feature_{i+1}'
+
+    return D0, D1, features_dict
+
+def plot_hist_binary(D, L, nr_features, positive_c_name, negative_c_name):
+
+    D0, D1, features_dict = _setup_data_plot(D, L, nr_features, positive_c_name, negative_c_name)
+
+    for dIdx in range(nr_features):
+        plt.figure()
+        plt.xlabel(features_dict[dIdx])
+        plt.hist(D0[dIdx, :], bins = 10, density = True, alpha = 0.4, label = negative_c_name)
+        plt.hist(D1[dIdx, :], bins = 10, density = True, alpha = 0.4, label = positive_c_name)
+        
+        plt.legend()
+        plt.tight_layout() # Use with non-default font size to keep axis label inside the figure
+        plt.savefig('hist_%d.pdf' % dIdx)
+    plt.show()
+
+def plot_scatter(D, L, nr_features, positive_c_name, negative_c_name):
+    
+    D0, D1, features_dict = _setup_data_plot(D, L, nr_features, positive_c_name, negative_c_name)
+
+    for dIdx1 in range(4):
+        for dIdx2 in range(4):
+            if dIdx1 == dIdx2:
+                continue
+            plt.figure()
+            plt.xlabel(features_dict[dIdx1])
+            plt.ylabel(features_dict[dIdx2])
+            plt.scatter(D0[dIdx1, :], D0[dIdx2, :], label = negative_c_name)
+            plt.scatter(D1[dIdx1, :], D1[dIdx2, :], label = positive_c_name)
+        
+            plt.legend()
+            plt.tight_layout() # Use with non-default font size to keep axis label inside the figure
+            plt.savefig('scatter_%d_%d.pdf' % (dIdx1, dIdx2))
+        plt.show()
+
 
 
 # # XXX main
