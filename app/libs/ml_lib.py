@@ -3,6 +3,7 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 from sklearn import datasets
+import seaborn
 
 iris = datasets.load_iris()
 
@@ -317,6 +318,9 @@ def split_db_2to1(D, L, seed=0):
     LTE = L[idxTest]
     return (DTR, LTR), (DTE, LTE)
 
+######################
+######################
+######################
 def load_bniary_train_data(fname, nr_features):
     DList = []
     labelsList = []
@@ -345,7 +349,7 @@ def _setup_data_plot(D, L, nr_features, positive_c_name, negative_c_name):
     features_dict = {}
 
     for i in range(nr_features):
-        features_dict[i] = f'feature_{i+1}'
+        features_dict[i] = f'feature_{i}'
 
     return D0, D1, features_dict
 
@@ -356,12 +360,12 @@ def plot_hist_binary(D, L, nr_features, positive_c_name, negative_c_name):
     for dIdx in range(nr_features):
         plt.figure()
         plt.xlabel(features_dict[dIdx])
-        plt.hist(D0[dIdx, :], bins = 10, density = True, alpha = 0.4, label = negative_c_name)
-        plt.hist(D1[dIdx, :], bins = 10, density = True, alpha = 0.4, label = positive_c_name)
+        plt.hist(D0[dIdx, :], bins = 10, density = True, alpha = 0.4, ec="#090b33", label = negative_c_name)
+        plt.hist(D1[dIdx, :], bins = 10, density = True, alpha = 0.4, ec="#452b0d", label = positive_c_name)
         
         plt.legend()
-        plt.tight_layout() # Use with non-default font size to keep axis label inside the figure
-        plt.savefig('hist_%d.pdf' % dIdx)
+        plt.tight_layout()
+        plt.savefig('plots/histogram/hist_%d.pdf' % dIdx)
     plt.show()
 
 def plot_scatter(D, L, nr_features, positive_c_name, negative_c_name):
@@ -379,9 +383,20 @@ def plot_scatter(D, L, nr_features, positive_c_name, negative_c_name):
             plt.scatter(D1[dIdx1, :], D1[dIdx2, :], label = positive_c_name)
         
             plt.legend()
-            plt.tight_layout() # Use with non-default font size to keep axis label inside the figure
-            plt.savefig('scatter_%d_%d.pdf' % (dIdx1, dIdx2))
+            plt.tight_layout()
+            plt.savefig('plots/scatter/scatter_%d_%d.pdf' % (dIdx1, dIdx2))
         plt.show()
+
+def plot_pearson_heatmap(D, L):
+    plt.figure()
+    seaborn.heatmap(np.corrcoef(D), linewidth=0.2, cmap="Greys", square=True, cbar=False)
+    plt.savefig('plots/pearson/Pearson_all.pdf')
+    plt.figure()
+    seaborn.heatmap(np.corrcoef(D[:, L==0]), linewidth=0.2, cmap="Blues", square=True,cbar=False)
+    plt.savefig('plots/pearson/Pearson_Male.pdf')
+    plt.figure()
+    seaborn.heatmap(np.corrcoef(D[:, L==1]), linewidth=0.2, cmap="Oranges", square=True, cbar=False)
+    plt.savefig('plots/pearson/Pearson_Female.pdf')
 
 
 
