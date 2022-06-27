@@ -1,5 +1,6 @@
 from typing import Tuple
 import numpy as np
+import scipy as sp
 import csv
 import matplotlib.pyplot as plt
 from sklearn import datasets
@@ -321,7 +322,7 @@ def split_db_2to1(D, L, seed=0):
 ######################
 ######################
 ######################
-def load_bniary_train_data(fname, nr_features):
+def load_binary_train_data(fname, nr_features):
     DList = []
     labelsList = []
     hLabels = {}
@@ -353,7 +354,7 @@ def _setup_data_plot(D, L, nr_features, positive_c_name, negative_c_name):
 
     return D0, D1, features_dict
 
-def plot_hist_binary(D, L, nr_features, positive_c_name, negative_c_name):
+def plot_hist_binary(D, L, nr_features, positive_c_name, negative_c_name, file_name=''):
 
     D0, D1, features_dict = _setup_data_plot(D, L, nr_features, positive_c_name, negative_c_name)
 
@@ -365,7 +366,7 @@ def plot_hist_binary(D, L, nr_features, positive_c_name, negative_c_name):
         
         plt.legend()
         plt.tight_layout()
-        plt.savefig('plots/histogram/hist_%d.pdf' % dIdx)
+        plt.savefig('plots/histogram/hist_%s_%d.pdf' % (file_name, dIdx))
     plt.show()
 
 def plot_scatter(D, L, nr_features, positive_c_name, negative_c_name):
@@ -397,6 +398,30 @@ def plot_pearson_heatmap(D, L):
     plt.figure()
     seaborn.heatmap(np.corrcoef(D[:, L==1]), linewidth=0.2, cmap="Oranges", square=True, cbar=False)
     plt.savefig('plots/pearson/Pearson_Female.pdf')
+
+def gaussanization(DTR, DTE):
+    """
+    DTE can also be the same of DTR in case of training
+    use DTE==DTE when ranking test data over training data
+    """
+    gaussianized_data = np.zeros(DTE.shape)
+    for i in range (DTR.shape[0]):
+        ranks_for_row = []
+        for j in range(DTE.shape[1]):
+            tot = 0 
+            line = DTR[i, :]
+            value = DTE[i,j]
+            tot += (line<value).sum()
+            tot += 1
+            rank = tot/(DTE.shape[1] + 2)
+            ranks_for_row.append(rank)
+        gaussianized_data[i,:] = np.asarray(ranks_for_row)
+
+    return sp.stats.norm.ppf(gaussianized_data)
+
+def z_normalization(D):
+    # subtract dataset mean from each sample and divide by standard deviation
+    return sp.stats.zscore(D, axis=1)
 
 
 

@@ -21,9 +21,17 @@ elif PROVAAAAAAAAA == 'pulsar':
 
 if __name__ == '__main__':
 
-    D, L = lib.load_bniary_train_data(TRAINING_DATA_FILE, NR_FEATURES)
-    # lib.plot_hist_binary(D, L, NR_FEATURES, 'Female', 'Male') # non Gaussian 10-9-7-0-3-2
-    # lib.plot_scatter(D, L, NR_FEATURES, 'Female', 'Male')
-    # lib.plot_pearson_heatmap(D, L)
+    D, L = lib.load_binary_train_data(TRAINING_DATA_FILE, NR_FEATURES)
+    D_norm = lib.z_normalization(D)
+
+    ### PLOTTING
+    # lib.plot_hist_binary(D_norm, L, NR_FEATURES, 'Female', 'Male') # non Gaussian 10-9-7-0-3-2
+    # lib.plot_scatter(D_norm, L, NR_FEATURES, 'Female', 'Male')
+    # lib.plot_pearson_heatmap(D_norm, L)
+    
+    ### GAUSSANIZATION
+    D_norm_gau = lib.gaussanization(D_norm, D_norm)
+    # lib.plot_hist_binary(D_norm_gau, L, NR_FEATURES, 'Female', 'Male', 'gaussianized')
+
 
 
