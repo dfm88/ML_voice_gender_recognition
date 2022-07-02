@@ -1,3 +1,5 @@
+import sys
+sys.path.append('.')
 from ast import Yield
 from typing import Tuple
 import numpy as np
@@ -88,7 +90,7 @@ def flatten(mat):
 
 def load_solution(name: str, verbose=True):
     """
-    automatically searche and load solution in path .solution/
+    automatically search and load solution in path .solution/
     example
         my_lib.load_solution('lab05_Generative_Models/Solution/logMarginal_MVG')
     """
@@ -137,7 +139,6 @@ def logpdf_GAU_ND(X, mu, C):
         :1-d array
     """
     try:
-
         P = np.linalg.inv(C) # C^-1
     except:
         P = np.linalg.pinv(C) # C^-1
@@ -168,9 +169,10 @@ def compute_empirical_cov(X):
     """
     The maximum likehood Covariance is the Empirical Covariance
     """
-    mu = compute_empirical_mean(X)
-    cov = np.dot((X - mu), (X-mu).T) / X.shape[1]
-    return cov
+    # mu = compute_empirical_mean(X)
+    # cov = np.dot((X - mu), (X-mu).T) / X.shape[1]
+    # return cov
+    return np.cov(X)
 
 
 def compute_empirical_mean(X):
@@ -180,40 +182,49 @@ def compute_empirical_mean(X):
     return colv(X.mean(1))
 
 
-def compute_empirical_mean_and_cov(X, is_bayesian=False) -> Tuple:
+def compute_empirical_mean_and_cov(X, is_bayesian=False, is_tied=False, tied_cov=None) -> Tuple:
     """
     Same as before functions but in one time
 
     :is_bayesian: if True the covariance Matrix will have only 
                   the elements in the diagonal (lab05 II) because (only for Gaussian Classifier)
                   the covariance matrix of Bayesian is the same as Gaussian but with only diagonal elements
+    :is_tied: if True the cov matrix taken from :tied_cov param
+    :tied_cov: used only if param :is_tied == True
+    
     Returns:
         mu
         C
     """
     mu = colv(X.mean(1))
-    C = np.dot((X - mu), (X-mu).T) / X.shape[1]
+    # C = np.dot((X - mu), (X-mu).T) / X.shape[1]
+    if is_tied:
+        if tied_cov is None:
+            raise ValueError('If is_tied == True, you need to provide the tied_cov param')
+        C = tied_cov
+    else:
+        C = np.cov(X)
 
     if is_bayesian:
-        # to make the C matric diagonal multiply it for an identity matrix of same shape
+        # to make the C matrix diagonal multiply it for an identity matrix of same shape
         C = C * np.identity(C.shape[0])
     return (mu, C)
 
 
 def within_class_covariance(data: np.array, whole_labels: np.array, labels: list):
     """
-    Lab05 II (formula in the Tied Cov Gaussian Classifier) 
+    Lab05 II (Tied Cov Gaussian Classifier) 
     Given the data, the Classes labels, returns the Within Class Covariance
 
     :data:   must be the whole dataset, not splitted for class labels
     :whole_labels: a 1-d np array that lists all classes labels
-    :labels: a list with only labels identifier (like 0,1,2 for the setosa dataset)
+    :labels: a list with only labels identifier (like 0,1,2 for the Setosa dataset)
     """
     SW = 0
     for label in labels:
         data_for_label = data[:, whole_labels == label]
         C = compute_empirical_cov(data_for_label)
-        # (n_c -> nr of elment for each Class Label)
+        # (n_c -> nr of element for each Class Label)
         n_c = (whole_labels == label).sum()
         SW += n_c * C
     return SW/data.shape[1]
@@ -221,8 +232,7 @@ def within_class_covariance(data: np.array, whole_labels: np.array, labels: list
 
 def loglikehood(X, mu, C):
     """
-    LAB04
-    (lez 11 - 28:00) is the sum of the log density for all the samples
+    is the sum of the log density for all the samples
     so we exploit the log density function and sum over it
     """
     return logpdf_GAU_ND(X, mu, C).sum()
@@ -230,11 +240,11 @@ def loglikehood(X, mu, C):
 
 def likehood(X, mu, C):
     """
-    LAB04 (probabily not useful for underflow)
+    (probably not useful for underflow)
     simply the exponential of the log-likehood (lab4 31.23)
     """
     Y = np.exp(logpdf_GAU_ND(X, mu, C))
-    # the product of the densisty for all the vectors
+    # the product of the density for all the vectors
     return Y.prod()
 
 
@@ -276,13 +286,12 @@ def split_db_2to1(D, L, seed=0):
     LTE = L[idxTest]
     return (DTR, LTR), (DTE, LTE)
 
-######################
-######################
-######################
+######################  <><><><><><><><><><><>   ######################<><><><><><><><><><><>     
+#<><><><><><><><><><><>   ######################<><><><><><><><><><><>     ######################
+######################<><><><><><><><><><><>     ######################<><><><><><><><><><><>
 def load_binary_train_data(fname, nr_features):
     DList = []
     labelsList = []
-    hLabels = {}
 
     # for i in range(nr_features):
     #     hLabels[f'feature_{i+1}'] = i
@@ -355,7 +364,7 @@ def plot_pearson_heatmap(D, L):
     seaborn.heatmap(np.corrcoef(D[:, L==1]), linewidth=0.2, cmap="Oranges", square=True, cbar=False)
     plt.savefig('plots/pearson/Pearson_Female.pdf')
 
-def gaussanization(DTR, DTE):
+def gaussianization(DTR, DTE):
     """
     DTE can also be the same of DTR in case of training
     use DTE==DTE when ranking test data over training data
@@ -383,7 +392,7 @@ def PCA(data, m:int):
     """
     :m = nr of features to keep
     """
-    print(f'Applying PCA with reduction of {m}')
+    print(f'Applying PCA using {m}/{data.shape[0]} features')
     # mean lung l'asse x
     mu = data.mean(1)  # 1-d array
 
@@ -491,7 +500,6 @@ def spilt_K_fold(D, L, k:int, seed=0) -> Yield(Tuple):
     # SHUFFLE columns ids
     # D.shape[1] (tot nr of samples) random indexes from 0 to D.shape[1]-1
     idx = np.random.permutation(D.shape[1])
-    print('\t\t\t WARNING RECOMPUTING RANDOMNESS IN K FOLD SPLIT ---------------------')
 
     # how many sample in each fold
     nr_samples_in_folds = int(D.shape[1] / k)
@@ -505,7 +513,6 @@ def spilt_K_fold(D, L, k:int, seed=0) -> Yield(Tuple):
         if i == k-1:
             end_index = None 
         # take the i portion of random column indices
-        import ipdb; ipdb.set_trace()
         idx_validation = idx[start_index : end_index]
 
         #### removes the validation indexes from the dataset
@@ -515,26 +522,147 @@ def spilt_K_fold(D, L, k:int, seed=0) -> Yield(Tuple):
 
         DVA = D[:,idx_validation]
         LVA = L[idx_validation]
-
         yield (DTR, LTR, DVA, LVA)
 
 
 
-def K_fold(D, L, classifier_class: BaseClassifier, k:int, seed=0):
+def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, cfp=1, cfn=1, seed=0) -> float:
+    """Returns the min DCF on the base split/ priors and costs
 
-    for i in range(k):
+    Args:
+        D (np.array): Whole Data
+        L (np.array): Whole Labels
+        classifier_class (BaseClassifier): an instance of BaseClassifier class
+        k (int): nr of folds
+        prior_cl_T (float, optional): Prior of class True (only binary tasks). Defaults to 0.5.
+        cfp (int, optional): Cost for False Positive. Defaults to 1.
+        cfn (int, optional): Cost for False Negative. Defaults to 1.
+        seed (int, optional): to randomize the shuffle phase of k-fold. Defaults to 0.
 
-        fold_generator = spilt_K_fold(D, L, k, seed)
-        DTR, LTR, DVA, LVA = next(fold_generator)
-        import ipdb; ipdb.set_trace()
+    Returns:
+        float: min dcf
+    """
+    
+    
+    # typing for testing
+    classes_prior = [prior_cl_T, 1-prior_cl_T]
+
+    tot_scores = []
+    tot_LVA = []
+    for ( DTR, LTR, DVA, LVA) in spilt_K_fold(D, L, k, seed):
         classifier: BaseClassifier = classifier_class(DTR, LTR)
-        classes_prior = [0.5, 0.5]
-        classifier.train(DTE=DVA, classes_prior=classes_prior)
-        aaa = classifier.classify(LTE=LVA)
-        import ipdb; ipdb.set_trace()
-        aaa
+        classifier.compute_score(DVA)
+        tot_scores.append(classifier.scores)
+        tot_LVA.append(LVA)
+
+    # make a unique np.array with scores and labels
+    # computed on each fold
+    tot_scores = np.hstack(tot_scores)
+    tot_LVA = np.hstack(tot_LVA)
+
+    classifier.scores = tot_scores
+    classifier.train(classes_prior) 
+
+    llr = classifier.compute_llr()
+    # import ipdb; ipdb.set_trace()
+    min_dcf = compute_min_DCF(
+        scores=llr,
+        labels=tot_LVA,
+        prior_cl1=prior_cl_T,
+        Cfn=cfn,
+        Cfp=cfp
+    )
+    return min_dcf
 
 
+
+################################################
+#############   DCF START    ###################################################
+################################################
+
+def assign_labels(scores, prior_cl1, Cfn, Cfp, th=None):
+    """
+    :score scores array (x,)
+    :prior_cl1 prior class1
+    :Cfn Costs False Negative
+    :Cfp Costs False Positive
+    :th threshold 
+
+    threshold = -log( (prior_cl1 * Cfn) / ((1 - prior_cl1) * Cfp) )
+
+    returns the array of predictions based on the computed threshold
+    """
+    if th is None:
+        th = -np.log(prior_cl1 * Cfn) + np.log((1 - prior_cl1) * Cfp)
+    P = scores > th
+    return np.int32(P)
+
+def compute_conf_matrix_binary(Pred, Labels):
+    C = np.zeros((2, 2))
+    # compare the predicted label with the
+    # actual one and count how many time the prediction
+    # was right 
+    C[0,0] = ((Pred == 0) * (Labels == 0)).sum()
+    C[0,1] = ((Pred == 0) * (Labels == 1)).sum()
+    C[1,0] = ((Pred == 1) * (Labels == 0)).sum()
+    C[1,1] = ((Pred == 1) * (Labels == 1)).sum()
+    return C
+
+def compute_emp_Bayes_binary(CM, prior_cl1, Cfn, Cfp):
+    """
+    slide 30 lez 08
+
+    :CM confusion matrix
+    :prior_cl1 prior class 1
+    :Cfn Costs False Negative
+    :Cfp Costs False Positive
+    """
+    # False negative rate
+    fnr = CM[0,1] / (CM[0,1] + CM[1,1])
+    # False positive rate
+    fpr = CM[1,0] / (CM[1,0] + CM[0,0])
+    return prior_cl1 * Cfn * fnr + (1-prior_cl1) * Cfp * fpr
+
+def compute_normalized_emp_Bayes(CM, prior_cl1, Cfn, Cfp): # DCF
+    """
+    calculate the empirical bayes Risk (not normalized) and divide it by
+    the min between a class that predicts always True and one always False
+
+    :CM confusion matrix
+    :prior_cl1 prior class 1
+    :Cfn Costs False Negative
+    :Cfp Costs False Positive
+    """
+    empBayes = compute_emp_Bayes_binary(CM, prior_cl1, Cfn, Cfp)
+    return empBayes / min(prior_cl1 * Cfn, (1 - prior_cl1) * Cfp)
+
+def compute_act_DCF(scores, labels, prior_cl1, Cfn, Cfp, th=None):
+    # returns the array of predictions based on the computed threshold
+    Pred = assign_labels(scores, prior_cl1, Cfn, Cfp, th=th)
+    # computes the Confusion Matrix
+    CM = compute_conf_matrix_binary(Pred, labels)
+    return compute_normalized_emp_Bayes(CM, prior_cl1, Cfn, Cfp)
+
+def compute_min_DCF(scores, labels, prior_cl1, Cfn, Cfp):
+    """
+    DCFmin comparing with all the threshold
+    """
+    thresholds = np.array(scores) # create a copy
+    thresholds.sort()
+    # append -inf ath the begin and +inf at the end
+    thresholds = np.concatenate([
+        np.array([-np.inf]),
+        thresholds,
+        np.array([np.inf]),
+    ])
+    dcfList = []
+    for _th in thresholds:
+        dcfList.append(compute_act_DCF(scores, labels, prior_cl1, Cfn, Cfp, th = _th))
+    return np.array(dcfList).min()
+
+################################################
+#############   DCF END    ###################################################
+################################################
 
 
 

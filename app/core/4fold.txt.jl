@@ -1,0 +1,139 @@
+Applying PCA using 12/12 features
+Applying PCA using 12/12 features
+
+GAUSSIAN FULL COV WITH K FOLD (4 folds) 
+min DCF MVG Full-Cov with prior=0.5:  0.049
+min DCF MVG `gaussianized` Full-Cov with prior=0.5:  0.062
+
+min DCF MVG Full-Cov with prior=0.9:  0.123
+min DCF MVG `gaussianized` Full-Cov with prior=0.9:  0.174
+
+min DCF MVG Full-Cov with prior=0.1:  0.133
+min DCF MVG `gaussianized` Full-Cov with prior=0.1:  0.180
+
+
+GAUSSIAN DIAGONAL COV WITH K FOLD (4 folds) 
+min DCF MVG Diagonal-Cov with prior=0.5:  0.051
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.5:  0.076
+
+min DCF MVG Diagonal-Cov with prior=0.9:  0.138
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.9:  0.190
+
+min DCF MVG Diagonal-Cov with prior=0.1:  0.154
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.1:  0.219
+
+
+GAUSSIAN TIED COV WITH K FOLD (4 folds) 
+min DCF MVG Tied-Cov with prior=0.5:  0.047
+min DCF MVG `gaussianized` Tied-Cov with prior=0.5:  0.061
+
+min DCF MVG Tied-Cov with prior=0.9:  0.125
+min DCF MVG `gaussianized` Tied-Cov with prior=0.9:  0.168
+
+min DCF MVG Tied-Cov with prior=0.1:  0.125
+min DCF MVG `gaussianized` Tied-Cov with prior=0.1:  0.180
+
+Applying PCA using 11/12 features
+Applying PCA using 11/12 features
+
+GAUSSIAN FULL COV WITH K FOLD (4 folds) 
+min DCF MVG Full-Cov with prior=0.5:  0.098
+min DCF MVG `gaussianized` Full-Cov with prior=0.5:  0.074
+
+min DCF MVG Full-Cov with prior=0.9:  0.226
+min DCF MVG `gaussianized` Full-Cov with prior=0.9:  0.206
+
+min DCF MVG Full-Cov with prior=0.1:  0.269
+min DCF MVG `gaussianized` Full-Cov with prior=0.1:  0.210
+
+
+GAUSSIAN DIAGONAL COV WITH K FOLD (4 folds) 
+min DCF MVG Diagonal-Cov with prior=0.5:  0.106
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.5:  0.087
+
+min DCF MVG Diagonal-Cov with prior=0.9:  0.241
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.9:  0.231
+
+min DCF MVG Diagonal-Cov with prior=0.1:  0.270
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.1:  0.231
+
+
+GAUSSIAN TIED COV WITH K FOLD (4 folds) 
+min DCF MVG Tied-Cov with prior=0.5:  0.096
+min DCF MVG `gaussianized` Tied-Cov with prior=0.5:  0.072
+
+min DCF MVG Tied-Cov with prior=0.9:  0.222
+min DCF MVG `gaussianized` Tied-Cov with prior=0.9:  0.202
+
+min DCF MVG Tied-Cov with prior=0.1:  0.262
+min DCF MVG `gaussianized` Tied-Cov with prior=0.1:  0.206
+
+Applying PCA using 10/12 features
+Applying PCA using 10/12 features
+
+GAUSSIAN FULL COV WITH K FOLD (4 folds) 
+min DCF MVG Full-Cov with prior=0.5:  0.114
+min DCF MVG `gaussianized` Full-Cov with prior=0.5:  0.072
+
+min DCF MVG Full-Cov with prior=0.9:  0.263
+min DCF MVG `gaussianized` Full-Cov with prior=0.9:  0.197
+
+min DCF MVG Full-Cov with prior=0.1:  0.309
+min DCF MVG `gaussianized` Full-Cov with prior=0.1:  0.204
+
+
+GAUSSIAN DIAGONAL COV WITH K FOLD (4 folds) 
+min DCF MVG Diagonal-Cov with prior=0.5:  0.118
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.5:  0.085
+
+min DCF MVG Diagonal-Cov with prior=0.9:  0.281
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.9:  0.224
+
+min DCF MVG Diagonal-Cov with prior=0.1:  0.293
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.1:  0.235
+
+
+GAUSSIAN TIED COV WITH K FOLD (4 folds) 
+min DCF MVG Tied-Cov with prior=0.5:  0.112
+min DCF MVG `gaussianized` Tied-Cov with prior=0.5:  0.071
+
+min DCF MVG Tied-Cov with prior=0.9:  0.258
+min DCF MVG `gaussianized` Tied-Cov with prior=0.9:  0.204
+
+min DCF MVG Tied-Cov with prior=0.1:  0.298
+min DCF MVG `gaussianized` Tied-Cov with prior=0.1:  0.201
+
+Applying PCA using 9/12 features
+Applying PCA using 9/12 features
+
+GAUSSIAN FULL COV WITH K FOLD (4 folds) 
+min DCF MVG Full-Cov with prior=0.5:  0.160
+min DCF MVG `gaussianized` Full-Cov with prior=0.5:  0.093
+
+min DCF MVG Full-Cov with prior=0.9:  0.385
+min DCF MVG `gaussianized` Full-Cov with prior=0.9:  0.235
+
+min DCF MVG Full-Cov with prior=0.1:  0.412
+min DCF MVG `gaussianized` Full-Cov with prior=0.1:  0.242
+
+
+GAUSSIAN DIAGONAL COV WITH K FOLD (4 folds) 
+min DCF MVG Diagonal-Cov with prior=0.5:  0.164
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.5:  0.096
+
+min DCF MVG Diagonal-Cov with prior=0.9:  0.383
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.9:  0.259
+
+min DCF MVG Diagonal-Cov with prior=0.1:  0.424
+min DCF MVG `gaussianized` Diagonal-Cov with prior=0.1:  0.258
+
+
+GAUSSIAN TIED COV WITH K FOLD (4 folds) 
+min DCF MVG Tied-Cov with prior=0.5:  0.158
+min DCF MVG `gaussianized` Tied-Cov with prior=0.5:  0.090
+
+min DCF MVG Tied-Cov with prior=0.9:  0.375
+min DCF MVG `gaussianized` Tied-Cov with prior=0.9:  0.234
+
+min DCF MVG Tied-Cov with prior=0.1:  0.410
+min DCF MVG `gaussianized` Tied-Cov with prior=0.1:  0.236
