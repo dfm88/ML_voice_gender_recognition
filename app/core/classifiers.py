@@ -216,11 +216,15 @@ class LogisticRegressionClassifier(BaseClassifier):
         )
         self.scores = None
 
-    def logreg_obj_wrap(self, DTR, LTR, _lambda):
+    def logreg_obj_wrap(self, DTR, LTR, _lambda, regularized=False):
         def logreg_obj(v):
             """
             J(w, b) = (l/2)||w||^2 + (1/n)SUM(1 to n){ log(1 + exp^(-zi(w^Txi + b))) }
+
+            if regularized == True (i.e. unbalanced data), LR scores will be balanced
+            with classes prior and nr of elements (07_slide30)
             """
+            prior = 0.5
             # dimension of features space (number of features)
             M = DTR.shape[0]
             # transform label 0 to -1 and label 1 to 1
@@ -233,9 +237,14 @@ class LogisticRegressionClassifier(BaseClassifier):
 
             # since DTR = [x1, x2, ..., xn], to compute [w.T*x1, ..., w.T*xn]
             # we can avoid the for loop to compute """w^Txi"""  and then broadcast the bais '+ b'
-            # shown with for loop at 40:43 lab07
             S = np.dot(w.T, DTR) + b
 
+            if regularized: # (07_slide30)
+            #                         """(priorTrue/nrTrue)SUM{ log(1 + exp^(-zi(w^TxTrue + b))) }"""
+                cross_entropy_pos2 = (np.logaddexp(0, -S[:,Z==1] * Z[Z==1]) * prior) / (Z==1).sum()
+            #                         """(priorFalse/nrFalse)SUM{ log(1 + exp^(-zi(w^TxFalse + b))) }"""
+                cross_entropy_neg2 = (np.logaddexp(0, -S[:,Z==-1] * Z[Z==-1]) * (1-prior)) / (Z==-1).sum()
+                return _lambda * 0.5 * np.linalg.norm(w)**2 + cross_entropy_pos2.sum() + cross_entropy_neg2.sum()
             # now compute          """(1/n)SUM(1 to n){ log(1 + exp^(-zi(w^Txi + b))) }"""
             # with the previous res """(1/n)SUM(1 to n){ log(1 + exp^(-zi(    S    ))) }"""
             # the log part is the same of log(exp^0 + exp^(-zi(    S    )))"""
@@ -253,13 +262,13 @@ class LogisticRegressionClassifier(BaseClassifier):
     def compute_score(self, DTE, LTE=None, _lambda=None):
         """Returns scores"""
         _v, _J, _d = sp.optimize.fmin_l_bfgs_b(
-            self.logreg_obj_wrap(DTR=DTE, LTR=LTE, _lambda=_lambda),
-            np.zeros(DTE.shape[0] + 1),
+            self.logreg_obj_wrap(DTR=self.D, LTR=self.L, _lambda=_lambda),
+            np.zeros(self.D.shape[0] + 1),
             approx_grad=True
         )
 
         # recover the w values inside the v vector
-        _w = _v[0 : DTE.shape[0]]
+        _w = _v[0 : self.D.shape[0]]
         # recover the b value inside the v vector
         _b = _v[-1]
         # scores from test sample

@@ -364,6 +364,18 @@ def plot_pearson_heatmap(D, L):
     seaborn.heatmap(np.corrcoef(D[:, L==1]), linewidth=0.2, cmap="Oranges", square=True, cbar=False)
     plt.savefig('plots/pearson/Pearson_Female.pdf')
 
+def plotDCF(x, y, xlabel, model_name:str):
+    plt.figure()
+    plt.plot(x, y[0:len(x)], label='min DCF prior=0.5', color='b')
+    plt.plot(x, y[len(x): 2*len(x)], label='min DCF prior=0.9', color='r')
+    plt.plot(x, y[2*len(x): 3*len(x)], label='min DCF prior=0.1', color='g')
+    plt.xlim([min(x), max(x)])
+    plt.xscale("log")
+    plt.legend(["min DCF prior=0.5", "min DCF prior=0.9", "min DCF prior=0.1"])
+    plt.xlabel(xlabel)
+    plt.ylabel("min DCF")
+    plt.savefig(f'plots/DCF/{model_name}.pdf')
+
 def gaussianization(DTR, DTE):
     """
     DTE can also be the same of DTR in case of training

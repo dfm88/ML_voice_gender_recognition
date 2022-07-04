@@ -83,12 +83,23 @@ if __name__ == '__main__':
         # ###   - - - - -      LOGISTIC REGRESSION  - - - - -    ####
         print(f'\nLOGISTIC REGRESSION WITH K FOLD ({nr_kfold_split} folds) ')
         _lambdas=np.logspace(-5, 2, num=30)
+        min_DCF_list = []
+        min_DCF_gau_list = []
         for prior_T in different_priors_T:
-            for _l in _lambdas:
-                
-                min_dcf = lib.K_fold(D_pca, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn, _lambda=_l)
-                min_dcf_gau = lib.K_fold(D_pca_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn, _lambda=_l)
+            for _l in _lambdas:                
+                min_dcf = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn, _lambda=_l)
+                min_DCF_list.append(min_dcf)
+                min_dcf_gau = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn, _lambda=_l)
+                min_DCF_gau_list.append(min_dcf_gau)
                 print(f"\nmin DCFLOGISTIC REGRESSION with prior={prior_T} and lambda={_l}:  {min_dcf}")
                 print(f"min DCF LOGISTIC REGRESSION 'Gaussuanized' with prior={prior_T} and lambda={_l}:  {min_dcf_gau}")
+
+        # # XXX prova solo lambda == 100, prior == 0.5
+        # import ipdb; ipdb.set_trace()
+        # min_dcf = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=0.5, cfp=cfp, cfn=cfn, _lambda=100)
+        # print(f"\nmin DCFLOGISTIC REGRESSION with prior=0.5 and lambda=100:  {min_dcf}")
+
+        lib.plotDCF(_lambdas, min_DCF_list, 'lambda', 'Logistic_Regression')
+        sys.exit(0)
 
 
