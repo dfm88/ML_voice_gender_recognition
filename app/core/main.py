@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pylab
 
-PROVAAAAAAAAA = 'voice'
+PROVAAAAAAAAA = 'pulsar'
 
 if PROVAAAAAAAAA == 'voice':
     TRAINING_DATA_FILE = 'Gender_Detection/Train.txt'
@@ -21,7 +21,12 @@ elif PROVAAAAAAAAA == 'pulsar':
 
 if __name__ == '__main__':
     import app.libs.ml_lib as lib
-    from app.core.classifiers import GaussianClassifier, GaussianBayesianClassifier, GaussianTiedClassifier
+    from app.core.classifiers import (
+        GaussianClassifier, 
+        GaussianBayesianClassifier, 
+        GaussianTiedClassifier,
+        LogisticRegressionClassifier,
+    )
 
     D, L = lib.load_binary_train_data(TRAINING_DATA_FILE, NR_FEATURES)
     # D, L = lib.load_iris_binary()
@@ -38,7 +43,7 @@ if __name__ == '__main__':
     different_priors_T = [0.5, 0.9, 0.1]
     D_norm = lib.z_normalization(D)
     D_norm_gau = lib.gaussianization(D_norm, D_norm)
-    nr_kfold_split = 4
+    nr_kfold_split = 3
     cfp = 1
     cfn = 1
 
@@ -46,35 +51,44 @@ if __name__ == '__main__':
         D_pca = lib.PCA(D_norm, m=D_norm.shape[0]-i)
         D_pca_gau = lib.PCA(D_norm_gau, m=D_norm_gau.shape[0]-i)
 
-        ###   - - - - -      GAUSSIAN NORMAL  - - - - -    ####
-        print(f'\nGAUSSIAN FULL COV WITH K FOLD ({nr_kfold_split} folds) ')
-        for prior_T in different_priors_T:
-            min_dcf = lib.K_fold(D_pca, L, GaussianClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
-            min_dcf_gau = lib.K_fold(D_pca_gau, L, GaussianClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
-            print("min DCF MVG Full-Cov with prior=%.1f:  %.3f" %(prior_T, min_dcf))
-            print("min DCF MVG `gaussianized` Full-Cov with prior=%.1f:  %.3f\n" %(prior_T, min_dcf_gau))
+        # ###   - - - - -      GAUSSIAN NORMAL  - - - - -    ####
+        # print(f'\nGAUSSIAN FULL COV WITH K FOLD ({nr_kfold_split} folds) ')
+        # for prior_T in different_priors_T:
+        #     min_dcf = lib.K_fold(D_pca, L, GaussianClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
+        #     min_dcf_gau = lib.K_fold(D_pca_gau, L, GaussianClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
+        #     print("min DCF MVG Full-Cov with prior=%.1f:  %.3f" %(prior_T, min_dcf))
+        #     print("min DCF MVG `gaussianized` Full-Cov with prior=%.1f:  %.3f\n" %(prior_T, min_dcf_gau))
 
-        ###   - - - - -      GAUSSIAN BAYES  - - - - -    ####
-        print(f'\nGAUSSIAN DIAGONAL COV WITH K FOLD ({nr_kfold_split} folds) ')
-        for prior_T in different_priors_T:
-            min_dcf = lib.K_fold(D_pca, L, GaussianBayesianClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
-            min_dcf_gau = lib.K_fold(D_pca_gau, L, GaussianBayesianClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
-            print("min DCF MVG Diagonal-Cov with prior=%.1f:  %.3f" %(prior_T, min_dcf))
-            print("min DCF MVG `gaussianized` Diagonal-Cov with prior=%.1f:  %.3f\n" %(prior_T, min_dcf_gau))
+        # ###   - - - - -      GAUSSIAN BAYES  - - - - -    ####
+        # print(f'\nGAUSSIAN DIAGONAL COV WITH K FOLD ({nr_kfold_split} folds) ')
+        # for prior_T in different_priors_T:
+        #     min_dcf = lib.K_fold(D_pca, L, GaussianBayesianClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
+        #     min_dcf_gau = lib.K_fold(D_pca_gau, L, GaussianBayesianClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
+        #     print("min DCF MVG Diagonal-Cov with prior=%.1f:  %.3f" %(prior_T, min_dcf))
+        #     print("min DCF MVG `gaussianized` Diagonal-Cov with prior=%.1f:  %.3f\n" %(prior_T, min_dcf_gau))
 
 
-        ###   - - - - -      GAUSSIAN TIED  - - - - -    ####
-        print(f'\nGAUSSIAN TIED COV WITH K FOLD ({nr_kfold_split} folds) ')
-        for prior_T in different_priors_T:
-            min_dcf = lib.K_fold(D_pca, L, GaussianTiedClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
-            min_dcf_gau = lib.K_fold(D_pca_gau, L, GaussianTiedClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
+        # ###   - - - - -      GAUSSIAN TIED  - - - - -    ####
+        # print(f'\nGAUSSIAN TIED COV WITH K FOLD ({nr_kfold_split} folds) ')
+        # for prior_T in different_priors_T:
+        #     min_dcf = lib.K_fold(D_pca, L, GaussianTiedClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
+        #     min_dcf_gau = lib.K_fold(D_pca_gau, L, GaussianTiedClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn)
         
-            print("min DCF MVG Tied-Cov with prior=%.1f:  %.3f" %(prior_T, min_dcf))
-            print("min DCF MVG `gaussianized` Tied-Cov with prior=%.1f:  %.3f\n" %(prior_T, min_dcf_gau))
+        #     print("min DCF MVG Tied-Cov with prior=%.1f:  %.3f" %(prior_T, min_dcf))
+        #     print("min DCF MVG `gaussianized` Tied-Cov with prior=%.1f:  %.3f\n" %(prior_T, min_dcf_gau))
 
 
 
 
-
+        # ###   - - - - -      LOGISTIC REGRESSION  - - - - -    ####
+        print(f'\nLOGISTIC REGRESSION WITH K FOLD ({nr_kfold_split} folds) ')
+        _lambdas=np.logspace(-5, 2, num=30)
+        for prior_T in different_priors_T:
+            for _l in _lambdas:
+                
+                min_dcf = lib.K_fold(D_pca, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn, _lambda=_l)
+                min_dcf_gau = lib.K_fold(D_pca_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_T, cfp=cfp, cfn=cfn, _lambda=_l)
+                print(f"\nmin DCFLOGISTIC REGRESSION with prior={prior_T} and lambda={_l}:  {min_dcf}")
+                print(f"min DCF LOGISTIC REGRESSION 'Gaussuanized' with prior={prior_T} and lambda={_l}:  {min_dcf_gau}")
 
 

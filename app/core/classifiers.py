@@ -12,14 +12,13 @@ import pylab
 class BaseClassifier(ABC):
 
     @abstractmethod
-    def __init__(self, D, L, is_tied=False):
+    def __init__(self, D, L):
         self.D = D
         self.L = L
-        self.is_tied = is_tied
 
     @abstractmethod
-    def compute_score(self, DTE):
-        """Returns posteriors"""
+    def compute_score(self, DTE, LTE=None, **classifiers_kwargs):
+        """Returns scores"""
         raise NotImplementedError
 
     @abstractmethod
@@ -43,9 +42,9 @@ class GaussianClassifier(BaseClassifier):
     def __init__(self, D, L, is_tied=False):
         super(GaussianClassifier, self).__init__(
             D,
-            L,
-            is_tied
+            L
         )
+        self.is_tied = is_tied
         self.is_bayesian = False
         tied_cov = None
         if self.is_tied:
@@ -109,7 +108,7 @@ class GaussianClassifier(BaseClassifier):
         return log_Posterior_to_exp
 
 
-    def compute_score(self, DTE):
+    def compute_score(self, DTE, LTE=None, **classifiers_kwargs):
         """
         Computes
             self.scores
@@ -137,24 +136,15 @@ class GaussianClassifier(BaseClassifier):
                 tied_cov=self.cov
             )
 
-        self.scores = self._log_domain_scores(
+        scores = self._log_domain_scores(
             class_gaussian_param=class_gaussian_parameters,
             class_labels=class_labels,
             DTE=DTE,
         )
+        self.scores = scores[1] - scores[0] # LLR
         return self.scores
         
 
-    def compute_llr(self):
-        """
-        computes the llr from scores
-        to be called after:
-            >>> def score()
-        """
-        if self.scores is None:
-            raise ValidationErr ("First you have to score the model") 
-        self.llr = self.scores[1] - self.scores[0]
-        return self.llr
 
     def train(self, classes_prior: list):
         """
@@ -215,4 +205,71 @@ class GaussianTiedClassifier(GaussianClassifier):
             L,
             is_tied = True
         )
+
+
+class LogisticRegressionClassifier(BaseClassifier):
+
+    def __init__(self, D, L):
+        super().__init__(
+            D,
+            L
+        )
+        self.scores = None
+
+    def logreg_obj_wrap(self, DTR, LTR, _lambda):
+        def logreg_obj(v):
+            """
+            J(w, b) = (l/2)||w||^2 + (1/n)SUM(1 to n){ log(1 + exp^(-zi(w^Txi + b))) }
+            """
+            # dimension of features space (number of features)
+            M = DTR.shape[0]
+            # transform label 0 to -1 and label 1 to 1
+            Z = LTR * 2.0 - 1.0
+
+            # divide the vector 'v' that contains both w than b (as last element)
+            # and make it a column vector
+            w = lib.colv(v[0 : M])
+            b = v[-1]
+
+            # since DTR = [x1, x2, ..., xn], to compute [w.T*x1, ..., w.T*xn]
+            # we can avoid the for loop to compute """w^Txi"""  and then broadcast the bais '+ b'
+            # shown with for loop at 40:43 lab07
+            S = np.dot(w.T, DTR) + b
+
+            # now compute          """(1/n)SUM(1 to n){ log(1 + exp^(-zi(w^Txi + b))) }"""
+            # with the previous res """(1/n)SUM(1 to n){ log(1 + exp^(-zi(    S    ))) }"""
+            # the log part is the same of log(exp^0 + exp^(-zi(    S    )))"""
+            # so we should pass to this func an array of zeros and our -S*Z
+            # the func do the broadcast so we can only pass a string 0
+            # result will be a vector of this computation for each x element
+            # for the 1/n part just compute the mean() of this sum
+            cross_entropy = np.logaddexp(0, -S * Z).mean()
+
+            # last part: cross_entropy + (l/2)||w||^2
+            return       cross_entropy + _lambda * 0.5 * np.linalg.norm(w)**2
+
+        return logreg_obj
+
+    def compute_score(self, DTE, LTE=None, _lambda=None):
+        """Returns scores"""
+        _v, _J, _d = sp.optimize.fmin_l_bfgs_b(
+            self.logreg_obj_wrap(DTR=DTE, LTR=LTE, _lambda=_lambda),
+            np.zeros(DTE.shape[0] + 1),
+            approx_grad=True
+        )
+
+        # recover the w values inside the v vector
+        _w = _v[0 : DTE.shape[0]]
+        # recover the b value inside the v vector
+        _b = _v[-1]
+        # scores from test sample
+        self.scores = np.dot(_w.T, DTE) + _b
+        return self.scores
+
+    def train(self, DTE, classes_prior: list):
+        """Returns posteriors"""
+        raise NotImplementedError
+
+    def classify(self, LTE):
+        raise NotImplementedError
 

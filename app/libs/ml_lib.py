@@ -526,7 +526,7 @@ def spilt_K_fold(D, L, k:int, seed=0) -> Yield(Tuple):
 
 
 
-def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, cfp=1, cfn=1, seed=0) -> float:
+def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, cfp=1, cfn=1, seed=0, **classifier_kwargs) -> float:
     """Returns the min DCF on the base split/ priors and costs
 
     Args:
@@ -551,7 +551,7 @@ def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, 
     tot_LVA = []
     for ( DTR, LTR, DVA, LVA) in spilt_K_fold(D, L, k, seed):
         classifier: BaseClassifier = classifier_class(DTR, LTR)
-        classifier.compute_score(DVA)
+        classifier.compute_score(DVA, LVA, **classifier_kwargs)
         tot_scores.append(classifier.scores)
         tot_LVA.append(LVA)
 
@@ -559,14 +559,13 @@ def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, 
     # computed on each fold
     tot_scores = np.hstack(tot_scores)
     tot_LVA = np.hstack(tot_LVA)
-
     classifier.scores = tot_scores
-    classifier.train(classes_prior) 
+    # classifier.train(classes_prior) 
 
-    llr = classifier.compute_llr()
+    # llr = classifier.compute_llr()
     # import ipdb; ipdb.set_trace()
     min_dcf = compute_min_DCF(
-        scores=llr,
+        scores=classifier.scores,
         labels=tot_LVA,
         prior_cl1=prior_cl_T,
         Cfn=cfn,
