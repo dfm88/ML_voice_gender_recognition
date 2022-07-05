@@ -86,34 +86,39 @@ def linear_logistic_regression(D, L, application_priors:list, nr_kfold_split, cf
             min_DCF_z_regul_list.append(min_dcfF_z_not_regul)
             min_dcf_gau_not_regul = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_l, regularized=regularized, pi_T=pi_T)
             min_DCF_gau_regul_list.append(min_dcf_gau_not_regul)
-            print(f"min DCF LOGISTIC REGRESSION 'z' REG by {pi_T} with prior={prior_cl_T} and lambda={_l}:  {min_dcfF_z_not_regul}")
-            print(f"min DCF LOGISTIC REGRESSION 'Gaussuanized' REG by {pi_T} with prior={prior_cl_T} and lambda={_l}:  {min_dcf_gau_not_regul}")
+            print(f"min DCF LOGISTIC REGRESSION 'z' REG by {pi_T} with prior={prior_cl_T} and lambda={_l}:  {min_dcfF_z_not_regul:.3f}")
+            print(f"min DCF LOGISTIC REGRESSION 'Gaussuanized' REG by {pi_T} with prior={prior_cl_T} and lambda={_l}:  {min_dcf_gau_not_regul:.3f}")
         return (min_DCF_z_regul_list, min_DCF_gau_regul_list)
 
 
 
-    tot_z_reg = []
-    tot_gau_reg=[]
-    pi_T=0.5
-    regularized=True
-    for prior in application_priors:
-        print(f'\n -- ------  APPLICATION PRIOR {prior}')
-        min_DCF_z_regul_list, min_DCF_gau_regul_list = lambda_tuning(prior, _lambdas, regularized=regularized, pi_T=pi_T)
-        tot_z_reg = tot_z_reg + min_DCF_z_regul_list
-        tot_gau_reg = tot_gau_reg + min_DCF_gau_regul_list
-    print('\n\nmin DCF for Z')
-    print(min(tot_z_reg))
-    print('\n\nmin DCF for gau')
-    print(min(tot_gau_reg))
-    lib.plotDCF(_lambdas, tot_z_reg, 'lambda', 'LR_z_regularized', regularized=regularized, pi_T=pi_T)
-    lib.plotDCF(_lambdas, tot_gau_reg, 'lambda', 'LR_gau_regularized', regularized=regularized, pi_T=pi_T)
+    # tot_z_reg = []
+    # tot_gau_reg=[]
+    # pi_T=0.5
+    # regularized=True
+    # for prior in application_priors:
+    #     print(f'\n -- ------  APPLICATION PRIOR {prior}')
+    #     min_DCF_z_regul_list, min_DCF_gau_regul_list = lambda_tuning(prior, _lambdas, regularized=regularized, pi_T=pi_T)
+    #     tot_z_reg = tot_z_reg + min_DCF_z_regul_list
+    #     tot_gau_reg = tot_gau_reg + min_DCF_gau_regul_list
+    # print('\n\nmin DCF for Z')
+    # print(min(tot_z_reg))
+    # print('\n\nmin DCF for gau')
+    # print(min(tot_gau_reg))
+    # lib.plotDCF(_lambdas, tot_z_reg, 'lambda', 'LR_z_regularized', regularized=regularized, pi_T=pi_T)
+    # lib.plotDCF(_lambdas, tot_gau_reg, 'lambda', 'LR_gau_regularized', regularized=regularized, pi_T=pi_T)
 
 
-    # for pi_T in [0.5, 0.9, 0.1]:
-    #     print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
-    #     _lambda = 10**(-4)
-    #     min_dcf = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, pi_T=pi_T)
-    #     print(f"min DCFLOGISTIC REGRESSION with prior={prior_cl_T} and lambda={_lambda}:  {min_dcf}")
+    # using lambda = 0 from previous result, we'll try, for each application prior
+    # different empirical priors
+    _lambda = 0
+    for prior_cl_T in application_priors:
+        for pi_T in application_priors:
+            print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
+            min_dcf_z = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=True, pi_T=pi_T)
+            min_dcf_gau = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=True, pi_T=pi_T)
+            print(f"min DCFLOGISTIC REGRESSION 'z' and lambda={_lambda}:  {min_dcf_z:.3f}")
+            print(f"min DCFLOGISTIC REGRESSION 'Gaussian' and lambda={_lambda}:  {min_dcf_gau:.3f}")
 
 
 

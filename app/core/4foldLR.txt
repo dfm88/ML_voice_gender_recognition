@@ -1,0 +1,37 @@
+LOGISTIC REGRESSION WITH K FOLD (4 folds) 
+
+----- Prior 0.5 --- pi_T 0.5
+min DCFLOGISTIC REGRESSION 'z' and lambda=0:  0.048
+min DCFLOGISTIC REGRESSION 'Gaussian' and lambda=0:  0.056
+
+----- Prior 0.5 --- pi_T 0.9
+min DCFLOGISTIC REGRESSION 'z' and lambda=0:  0.048
+min DCFLOGISTIC REGRESSION 'Gaussian' and lambda=0:  0.057
+
+----- Prior 0.5 --- pi_T 0.1
+min DCFLOGISTIC REGRESSION 'z' and lambda=0:  0.047
+min DCFLOGISTIC REGRESSION 'Gaussian' and lambda=0:  0.056
+
+----- Prior 0.9 --- pi_T 0.5
+min DCFLOGISTIC REGRESSION 'z' and lambda=0:  0.121
+min DCFLOGISTIC REGRESSION 'Gaussian' and lambda=0:  0.154
+
+----- Prior 0.9 --- pi_T 0.9
+min DCFLOGISTIC REGRESSION 'z' and lambda=0:  0.124
+min DCFLOGISTIC REGRESSION 'Gaussian' and lambda=0:  0.154
+
+----- Prior 0.9 --- pi_T 0.1
+min DCFLOGISTIC REGRESSION 'z' and lambda=0:  0.122
+min DCFLOGISTIC REGRESSION 'Gaussian' and lambda=0:  0.173
+
+----- Prior 0.1 --- pi_T 0.5
+min DCFLOGISTIC REGRESSION 'z' and lambda=0:  0.132
+min DCFLOGISTIC REGRESSION 'Gaussian' and lambda=0:  0.164
+
+----- Prior 0.1 --- pi_T 0.9
+min DCFLOGISTIC REGRESSION 'z' and lambda=0:  0.132
+min DCFLOGISTIC REGRESSION 'Gaussian' and lambda=0:  0.167
+
+----- Prior 0.1 --- pi_T 0.1
+min DCFLOGISTIC REGRESSION 'z' and lambda=0:  0.141
+min DCFLOGISTIC REGRESSION 'Gaussian' and lambda=0:  0.177
