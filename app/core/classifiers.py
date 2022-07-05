@@ -216,7 +216,7 @@ class LogisticRegressionClassifier(BaseClassifier):
         )
         self.scores = None
 
-    def logreg_obj_wrap(self, DTR, LTR, _lambda, regularized=False):
+    def logreg_obj_wrap(self, DTR, LTR, _lambda, regularized=False, pi_T=None):
         def logreg_obj(v):
             """
             J(w, b) = (l/2)||w||^2 + (1/n)SUM(1 to n){ log(1 + exp^(-zi(w^Txi + b))) }
@@ -224,7 +224,6 @@ class LogisticRegressionClassifier(BaseClassifier):
             if regularized == True (i.e. unbalanced data), LR scores will be balanced
             with classes prior and nr of elements (07_slide30)
             """
-            prior = 0.5
             # dimension of features space (number of features)
             M = DTR.shape[0]
             # transform label 0 to -1 and label 1 to 1
@@ -234,17 +233,22 @@ class LogisticRegressionClassifier(BaseClassifier):
             # and make it a column vector
             w = lib.colv(v[0 : M])
             b = v[-1]
-
             # since DTR = [x1, x2, ..., xn], to compute [w.T*x1, ..., w.T*xn]
             # we can avoid the for loop to compute """w^Txi"""  and then broadcast the bais '+ b'
             S = np.dot(w.T, DTR) + b
 
             if regularized: # (07_slide30)
             #                         """(priorTrue/nrTrue)SUM{ log(1 + exp^(-zi(w^TxTrue + b))) }"""
-                cross_entropy_pos2 = (np.logaddexp(0, -S[:,Z==1] * Z[Z==1]) * prior) / (Z==1).sum()
+                cross_entropy_pos2 = (
+                    (np.logaddexp(0, -S[:,Z==1] * Z[Z==1]) * pi_T) / (Z==1).sum()
+                ).sum()
             #                         """(priorFalse/nrFalse)SUM{ log(1 + exp^(-zi(w^TxFalse + b))) }"""
-                cross_entropy_neg2 = (np.logaddexp(0, -S[:,Z==-1] * Z[Z==-1]) * (1-prior)) / (Z==-1).sum()
-                return _lambda * 0.5 * np.linalg.norm(w)**2 + cross_entropy_pos2.sum() + cross_entropy_neg2.sum()
+                cross_entropy_neg2 = (
+                    (np.logaddexp(0, -S[:,Z==-1] * Z[Z==-1]) * (1-pi_T)) / (Z==-1).sum()
+                ).sum()
+                res = _lambda * 0.5 * np.linalg.norm(w)**2 + cross_entropy_pos2 + cross_entropy_neg2
+                # import ipdb; ipdb.set_trace()
+                return res
             # now compute          """(1/n)SUM(1 to n){ log(1 + exp^(-zi(w^Txi + b))) }"""
             # with the previous res """(1/n)SUM(1 to n){ log(1 + exp^(-zi(    S    ))) }"""
             # the log part is the same of log(exp^0 + exp^(-zi(    S    )))"""
@@ -259,10 +263,12 @@ class LogisticRegressionClassifier(BaseClassifier):
 
         return logreg_obj
 
-    def compute_score(self, DTE, LTE=None, _lambda=None):
+    def compute_score(self, DTE, LTE=None, _lambda=None, pi_T=None, regularized=False):
         """Returns scores"""
+        if regularized and pi_T is None:
+            raise ValidationErr("Can't ask regularization without providing an empirical prior")
         _v, _J, _d = sp.optimize.fmin_l_bfgs_b(
-            self.logreg_obj_wrap(DTR=self.D, LTR=self.L, _lambda=_lambda),
+            self.logreg_obj_wrap(DTR=self.D, LTR=self.L, _lambda=_lambda, pi_T=pi_T, regularized=regularized),
             np.zeros(self.D.shape[0] + 1),
             approx_grad=True
         )

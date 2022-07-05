@@ -289,7 +289,7 @@ def split_db_2to1(D, L, seed=0):
 ######################  <><><><><><><><><><><>   ######################<><><><><><><><><><><>     
 #<><><><><><><><><><><>   ######################<><><><><><><><><><><>     ######################
 ######################<><><><><><><><><><><>     ######################<><><><><><><><><><><>
-def load_binary_train_data(fname, nr_features):
+def load_binary_data(fname, nr_features):
     DList = []
     labelsList = []
 
@@ -325,14 +325,14 @@ def plot_hist_binary(D, L, nr_features, positive_c_name, negative_c_name, file_n
 
     for dIdx in range(nr_features):
         plt.figure()
+        plt.title(features_dict[dIdx])
         plt.xlabel(features_dict[dIdx])
         plt.hist(D0[dIdx, :], bins = 10, density = True, alpha = 0.4, ec="#090b33", label = negative_c_name)
         plt.hist(D1[dIdx, :], bins = 10, density = True, alpha = 0.4, ec="#452b0d", label = positive_c_name)
         
         plt.legend()
         plt.tight_layout()
-        plt.savefig('plots/histogram/hist_%s_%d.pdf' % (file_name, dIdx))
-    plt.show()
+        plt.savefig('plots/histogram/hist_%s_%d.jpg' % (file_name, dIdx))
 
 def plot_scatter(D, L, nr_features, positive_c_name, negative_c_name):
     
@@ -343,6 +343,7 @@ def plot_scatter(D, L, nr_features, positive_c_name, negative_c_name):
             if dIdx1 == dIdx2:
                 continue
             plt.figure()
+            plt.title('{} - {}'.format(features_dict[dIdx1], features_dict[dIdx2]))
             plt.xlabel(features_dict[dIdx1])
             plt.ylabel(features_dict[dIdx2])
             plt.scatter(D0[dIdx1, :], D0[dIdx2, :], label = negative_c_name)
@@ -350,31 +351,35 @@ def plot_scatter(D, L, nr_features, positive_c_name, negative_c_name):
         
             plt.legend()
             plt.tight_layout()
-            plt.savefig('plots/scatter/scatter_%d_%d.pdf' % (dIdx1, dIdx2))
-        plt.show()
+            plt.savefig('plots/scatter/scatter_%d_%d.jpg' % (dIdx1, dIdx2))
 
 def plot_pearson_heatmap(D, L):
     plt.figure()
+    plt.title('Female-Male')
     seaborn.heatmap(np.corrcoef(D), linewidth=0.2, cmap="Greys", square=True, cbar=False)
-    plt.savefig('plots/pearson/Pearson_all.pdf')
+    plt.savefig('plots/pearson/Pearson_all.jpg')
     plt.figure()
+    plt.title('Male')
     seaborn.heatmap(np.corrcoef(D[:, L==0]), linewidth=0.2, cmap="Blues", square=True,cbar=False)
-    plt.savefig('plots/pearson/Pearson_Male.pdf')
+    plt.savefig('plots/pearson/Pearson_Male.jpg')
     plt.figure()
+    plt.title('Female')
     seaborn.heatmap(np.corrcoef(D[:, L==1]), linewidth=0.2, cmap="Oranges", square=True, cbar=False)
-    plt.savefig('plots/pearson/Pearson_Female.pdf')
+    plt.savefig('plots/pearson/Pearson_Female.jpg')
 
-def plotDCF(x, y, xlabel, model_name:str):
+def plotDCF(x, y, xlabel, model_name:str, regularized, pi_T=0.5):
     plt.figure()
-    plt.plot(x, y[0:len(x)], label='min DCF prior=0.5', color='b')
-    plt.plot(x, y[len(x): 2*len(x)], label='min DCF prior=0.9', color='r')
-    plt.plot(x, y[2*len(x): 3*len(x)], label='min DCF prior=0.1', color='g')
+    title = 'Not Regularized' if not regularized else f'Regularized by \u03C0_T={pi_T}'
+    plt.title(title)
+    plt.plot(x, y[0:len(x)], label='min DCF \u03C0=0.5', color='b')
+    plt.plot(x, y[len(x): 2*len(x)], label='min DCF \u03C0=0.9', color='r')
+    plt.plot(x, y[2*len(x): 3*len(x)], label='min DCF \u03C0=0.1', color='g')
     plt.xlim([min(x), max(x)])
     plt.xscale("log")
-    plt.legend(["min DCF prior=0.5", "min DCF prior=0.9", "min DCF prior=0.1"])
+    plt.legend(["min DCF \u03C0=0.5", "min DCF \u03C0=0.9", "min DCF \u03C0=0.1"])
     plt.xlabel(xlabel)
     plt.ylabel("min DCF")
-    plt.savefig(f'plots/DCF/{model_name}.pdf')
+    plt.savefig(f'plots/DCF/{model_name}.jpg')
 
 def gaussianization(DTR, DTE):
     """
