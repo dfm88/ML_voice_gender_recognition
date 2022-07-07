@@ -144,9 +144,9 @@ if __name__ == '__main__':
 
     # plotting(D, L)
 
-    # gaussian(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    gaussian(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
-    linear_logistic_regression(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    # linear_logistic_regression(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
 
 

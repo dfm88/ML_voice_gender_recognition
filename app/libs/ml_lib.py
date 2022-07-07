@@ -323,12 +323,14 @@ def plot_hist_binary(D, L, nr_features, positive_c_name, negative_c_name, file_n
 
     D0, D1, features_dict = _setup_data_plot(D, L, nr_features, positive_c_name, negative_c_name)
 
+    bin_size_T = 100 if D1.shape[1] >= 100 else D1.shape[1] 
+    bin_size_F = 100 if D0.shape[1] >= 100 else D0.shape[1] 
     for dIdx in range(nr_features):
         plt.figure()
         plt.title(features_dict[dIdx])
         plt.xlabel(features_dict[dIdx])
-        plt.hist(D0[dIdx, :], bins = 10, density = True, alpha = 0.4, ec="#090b33", label = negative_c_name)
-        plt.hist(D1[dIdx, :], bins = 10, density = True, alpha = 0.4, ec="#452b0d", label = positive_c_name)
+        plt.hist(D0[dIdx, :], bins = bin_size_F, density = True, alpha = 0.4, ec="#090b33", label = negative_c_name)
+        plt.hist(D1[dIdx, :], bins = bin_size_T, density = True, alpha = 0.4, ec="#452b0d", label = positive_c_name)
         
         plt.legend()
         plt.tight_layout()
@@ -353,19 +355,19 @@ def plot_scatter(D, L, nr_features, positive_c_name, negative_c_name):
             plt.tight_layout()
             plt.savefig('plots/scatter/scatter_%d_%d.jpg' % (dIdx1, dIdx2))
 
-def plot_pearson_heatmap(D, L):
+def plot_pearson_heatmap(D, L, additional=''):
     plt.figure()
-    plt.title('Female-Male')
+    plt.title('Female-Male %s' % additional)
     seaborn.heatmap(np.corrcoef(D), linewidth=0.2, cmap="Greys", square=True, cbar=False)
-    plt.savefig('plots/pearson/Pearson_all.jpg')
+    plt.savefig('plots/pearson/%s_Pearson_all.jpg' % additional)
     plt.figure()
     plt.title('Male')
     seaborn.heatmap(np.corrcoef(D[:, L==0]), linewidth=0.2, cmap="Blues", square=True,cbar=False)
-    plt.savefig('plots/pearson/Pearson_Male.jpg')
+    plt.savefig('plots/pearson/%s_Pearson_Male.jpg' % additional)
     plt.figure()
     plt.title('Female')
     seaborn.heatmap(np.corrcoef(D[:, L==1]), linewidth=0.2, cmap="Oranges", square=True, cbar=False)
-    plt.savefig('plots/pearson/Pearson_Female.jpg')
+    plt.savefig('plots/pearson/%s_Pearson_Female.jpg' % additional)
 
 def plotDCF(x, y, xlabel, model_name:str, regularized, pi_T=0.5):
     plt.figure()
@@ -409,7 +411,7 @@ def PCA(data, m:int):
     """
     :m = nr of features to keep
     """
-    print(f'Applying PCA using {m}/{data.shape[0]} features')
+    print(f'\n------------------------------\nApplying PCA using {m}/{data.shape[0]} features')
     # mean lung l'asse x
     mu = data.mean(1)  # 1-d array
 
@@ -493,20 +495,21 @@ def spilt_K_fold(D, L, k:int, seed=0) -> Yield(Tuple):
 
             i.e. with k == 4
             for i in range(k)
-                i == 0)
-                    D = [[ D_fold_1 D_fold_2 D_fold_2 D_fold_4 ]] 
-                    L =  [ L_fold_1 L_fold_2 L_fold_2 L_fold_4 ]
+                >>> i == 0
+                    D = [[ D_fold_1 D_fold_2 D_fold_3 D_fold_4 ]] 
+                    L =  [ L_fold_1 L_fold_2 L_fold_3 L_fold_4 ]
                                         
                                         DTR         LTR       DVA       LVA
                         --> yields (D_fold_234, L_fold_234, D_fold_1, L_fold_1)
 
-                i == 1)
-                    D = [[ D_fold_1 D_fold_2 D_fold_2 D_fold_4 ]] 
-                    L =  [ L_fold_1 L_fold_2 L_fold_2 L_fold_4 ]
+                >>> i == 1
+                    D = [[ D_fold_1 D_fold_2 D_fold_3 D_fold_4 ]] 
+                    L =  [ L_fold_1 L_fold_2 L_fold_3 L_fold_4 ]
                                     
                                         DTR         LTR       DVA       LVA
                         --> yields (D_fold_134, L_fold_134, D_fold_2, L_fold_2)
-            ...
+
+                >>> i == ...
     """
     if k < 2:
         raise ValueError("nr of folds must be at least 2")
