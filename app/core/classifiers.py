@@ -288,3 +288,102 @@ class LogisticRegressionClassifier(BaseClassifier):
     def classify(self, LTE):
         raise NotImplementedError
 
+
+class SVMLinearClassifier(BaseClassifier):
+
+    def __init__(self, D, L):
+        super().__init__(
+            D,
+            L
+        )
+        self.scores = None
+        self.C = None
+        self.K = None
+        self.gamma = None
+
+
+    def _train_SVM(self, DTR, C, H):
+        """
+        :DTR data training
+        :C Costs
+        :H matrix H
+
+        returns alphastar and _x (dual loss) for SVM with scipy
+            numerical calculator 
+        """
+        dual_instance = lib.Dual(H)
+        alphaStar, _x, _y = sp.optimize.fmin_l_bfgs_b(
+            dual_instance.l_dual,
+            np.zeros(DTR.shape[1]),
+            bounds = [(0, C)] * DTR.shape[1],
+            factr = 0,
+            maxiter = 100_000,
+            maxfun = 100_000,
+            # iprint=1
+        )
+
+        return alphaStar, _x, _y
+
+    def _train_SVM_linear(self, DTR, LTR, DTE, LTE, C, K = 1):
+        Z = lib.compute_Z(LTR = LTR)
+
+        # append to DTR an array of ones (Lab09-a)
+        DTR_expanded = np.vstack([DTR, np.ones((1, DTR.shape[1]))*K])
+
+        DTE_expanded = np.vstack([DTE, np.ones((1, DTE.shape[1]))*K])
+
+        # compute the G matrix (Lab09-b)
+        G = np.dot(DTR_expanded.T, DTR_expanded)
+
+        # ho capito che calcola H da (Lab09-c) ma non ho capito perchè 
+        # moltiplica Z nella versione colv e rowv
+        H = lib.colv(Z) * lib.rowv(Z) * G
+        import ipdb; ipdb.set_trace()
+        alphaStar, _x, _y = self._train_SVM(DTR = DTR, C = C, H = H)
+
+        wStar = np.dot(DTR_expanded, lib.colv(alphaStar) * lib.colv(Z))
+
+        def JPrimal(w, DT_expanded, C, Z):
+            # Primal formulation (Lab09-e)
+            S = np.dot(lib.rowv(w), DT_expanded)
+            loss = np.maximum(np.zeros(S.shape), 1 - Z * S).sum()
+            return (
+                0.5 * np.linalg.norm(w)**2 + C * loss, 
+                S, 
+                loss
+            )
+        
+        # j primal with train set
+        j_primal, S, loss = JPrimal(wStar, DTR_expanded, C, Z)
+        return j_primal, S, loss
+
+        dual_loss = -_x
+        dual_gap = j_primal - dual_loss
+            
+        # j primal with test set
+        j_primal_test, S_test, loss_test = JPrimal(wStar, DTE_expanded, C, LTE)
+        return j_primal_test, S_test, loss_test
+        return j_primal_test, S_test, loss_test
+
+    def compute_score(self, DTE, LTE=None, C=0.1, K=1):
+        """Returns scores"""
+        self.C = C
+        self.K = K
+
+        _, scores, _ = self._train_SVM_linear(
+            DTR=self.D,
+            LTR=self.L,
+            DTE=DTE,
+            C=C,
+            LTE=LTE,
+            K=K,
+        )
+        self.scores = scores.ravel() # XXX need to ravel
+        return self.scores
+
+    def train(self, DTE, classes_prior: list):
+        """Returns posteriors"""
+        raise NotImplementedError
+
+    def classify(self, LTE):
+        raise NotImplementedError

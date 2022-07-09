@@ -407,6 +407,15 @@ def z_normalization(D):
     # subtract dataset mean from each sample and divide by standard deviation
     return sp.stats.zscore(D, axis=1)
 
+def compute_Z(LTR):
+    """
+    build the Z vector (map 1 for positive class and -1 for negative class)
+    """
+    Z = np.zeros(LTR.shape)
+    Z[LTR == 1] =  1
+    Z[LTR == 0] = -1
+    return Z
+
 def PCA(data, m:int):
     """
     :m = nr of features to keep
@@ -569,7 +578,7 @@ def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, 
 
     tot_scores = []
     tot_LVA = []
-    for ( DTR, LTR, DVA, LVA) in spilt_K_fold(D, L, k, seed):
+    for (DTR, LTR, DVA, LVA) in spilt_K_fold(D, L, k, seed):
         classifier: BaseClassifier = classifier_class(DTR, LTR)
         classifier.compute_score(DVA, LVA, **classifier_kwargs)
         tot_scores.append(classifier.scores)
@@ -592,6 +601,26 @@ def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, 
         Cfp=cfp
     )
     return min_dcf
+
+# Dual SVM computation
+class Dual:
+
+    def __init__(self, H):
+        self.H = H
+
+    def j_dual(self, alpha):
+        # alpha verrà computato da `scipy`` nella `fmin_l_bfgs_b`
+
+        # cacololo di (Lab09-d)
+        Ha = np.dot(self.H, colv(alpha))
+        aHa = np.dot(rowv(alpha), Ha)
+        a1 = alpha.sum()
+        return - 0.5 * aHa.ravel() + a1, -Ha.ravel() + np.ones(alpha.size)
+
+    def l_dual(self, alpha):
+        # alpha verrà computato da `scipy`` nella `fmin_l_bfgs_b`
+        loss, grad = self.j_dual(alpha)
+        return -loss, -grad
 
 
 

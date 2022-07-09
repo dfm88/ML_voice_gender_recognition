@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pylab
 
-PROVAAAAAAAAA = 'voice'
+PROVAAAAAAAAA = 'pulsar'
 
 if PROVAAAAAAAAA == 'voice':
     TRAINING_DATA_FILE = 'Gender_Detection/Train.txt'
@@ -31,6 +31,9 @@ def plotting(D, L):
     lib.plot_hist_binary(D_norm_gau, L, NR_FEATURES, 'Female', 'Male', 'gaussianized')
 
 def gaussian(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
+    """
+    GAUSSIAN TRAINING
+    """
     D_norm = lib.z_normalization(D)
     D_norm_gau = lib.gaussianization(D_norm, D_norm)
 
@@ -66,6 +69,9 @@ def gaussian(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
 
 
 def linear_logistic_regression(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
+    """
+    LOGISTIC LINEAR REGRESSION TRAINING
+    """
     D_norm = lib.z_normalization(D)
     D_norm_gau = lib.gaussianization(D_norm, D_norm)
     # ###   - - - - -      LOGISTIC REGRESSION  - - - - -    ####
@@ -91,7 +97,7 @@ def linear_logistic_regression(D, L, application_priors:list, nr_kfold_split, cf
         return (min_DCF_z_regul_list, min_DCF_gau_regul_list)
 
 
-
+    ### Estimating for different values of lambda
     # tot_z_reg = []
     # tot_gau_reg=[]
     # pi_T=0.5
@@ -120,6 +126,50 @@ def linear_logistic_regression(D, L, application_priors:list, nr_kfold_split, cf
             print(f"min DCFLOGISTIC REGRESSION 'z' and lambda={_lambda}:  {min_dcf_z:.3f}")
             print(f"min DCFLOGISTIC REGRESSION 'Gaussian' and lambda={_lambda}:  {min_dcf_gau:.3f}")
 
+def svm_linear(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
+    """
+    SVM LINEAR TRAINING
+    """
+    D_norm = lib.z_normalization(D)
+    D_norm_gau = lib.gaussianization(D_norm, D_norm)
+    # ###   - - - - -      SVM LINEAR REGRESSION  - - - - -    ####
+    print(f'\SVM LINEAR WITH K FOLD ({nr_kfold_split} folds) ')
+    C_list = np.logspace(-3, 1, num=30)
+
+    def C_tuning(prior_cl_T):
+        """
+        returns 2 list 
+            one with C estimation for Raw features
+            one with C estimation for Gaussianized features
+    
+        """
+        min_DCF_z_list = []
+        min_DCF_gau_list = []
+        for c in C_list:
+            min_dcfF_z = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c)
+            min_DCF_z_list.append(min_dcfF_z)
+            min_dcf_gau = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c)
+            min_DCF_gau_list.append(min_dcf_gau)
+            print(f"min DCF SVM Linear 'z' with C:{c} and prior {prior_cl_T}:  {min_dcfF_z:.3f}")
+            print(f"min DCF SVM Linear 'Gaussuanized' with C:{c} and prior {prior_cl_T}:  {min_dcf_gau:.3f}")
+        return (min_DCF_z_list, min_DCF_gau_list)
+
+    ### Estimating for different values of C
+    tot_z_reg = []
+    tot_gau_reg=[]
+    # pi_T=0.5
+    # regularized=True
+    for prior in application_priors:
+        print(f'\n -- ------  APPLICATION PRIOR {prior}')
+        min_DCF_z_regul_list, min_DCF_gau_regul_list = C_tuning(prior_cl_T=prior)
+        tot_z_reg = tot_z_reg + min_DCF_z_regul_list
+        tot_gau_reg = tot_gau_reg + min_DCF_gau_regul_list
+    print('\n\nmin DCF for Z')
+    print(min(tot_z_reg))
+    print('\n\nmin DCF for gau')
+    print(min(tot_gau_reg))
+    lib.plotDCF(C_list, tot_z_reg, 'C', 'SVM_linear_z')
+    lib.plotDCF(C_list, tot_gau_reg, 'C', 'SVM_linear_gau')
 
 
 if __name__ == '__main__':
@@ -129,6 +179,7 @@ if __name__ == '__main__':
         GaussianBayesianClassifier, 
         GaussianTiedClassifier,
         LogisticRegressionClassifier,
+        SVMLinearClassifier
     )
 
     D, L = lib.load_binary_data(TRAINING_DATA_FILE, NR_FEATURES)
@@ -144,9 +195,11 @@ if __name__ == '__main__':
 
     # plotting(D, L)
 
-    gaussian(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    # gaussian(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
     # linear_logistic_regression(D, L, application_priors, nr_kfold_split, cfp, cfn)
+
+    svm_linear(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
 
 
