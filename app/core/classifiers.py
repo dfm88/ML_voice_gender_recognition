@@ -324,8 +324,50 @@ class SVMLinearClassifier(BaseClassifier):
 
         return alphaStar, _x, _y
 
+    # def _train_SVM_linear(self, DTR, LTR, DTE, LTE, C, K = 1):
+    #     Z_LTR = lib.compute_Z(LTR = LTR)
+    #     Z_LTE = lib.compute_Z(LTR = LTE)
+
+    #     # append to DTR an array of ones (Lab09-a)
+    #     DTR_expanded = np.vstack([DTR, np.ones((1, DTR.shape[1]))*K])
+
+    #     DTE_expanded = np.vstack([DTE, np.ones((1, DTE.shape[1]))*K])
+
+    #     # compute the G matrix (Lab09-b)
+    #     G = np.dot(DTR_expanded.T, DTR_expanded)
+
+    #     # H = lib.colv(Z_LTR) * lib.rowv(Z_LTR) * G
+    #     H = lib.colv(LTR) * lib.rowv(LTR) * G
+    #     alphaStar, _x, _y = self._train_SVM(DTR = DTR, C = C, H = H)
+
+    #     # wStar = np.dot(DTR_expanded, lib.colv(alphaStar) * lib.colv(Z_LTR))
+    #     wStar = np.dot(DTR_expanded, lib.colv(alphaStar) * lib.colv(LTR))
+
+    #     def JPrimal(w, DT_expanded, C, Z_L):
+    #         # Primal formulation (Lab09-e)
+    #         S = np.dot(lib.rowv(w), DT_expanded)
+    #         loss = np.maximum(np.zeros(S.shape), 1 - Z_L * S).sum()
+    #         return (
+    #             0.5 * np.linalg.norm(w)**2 + C * loss, 
+    #             S, 
+    #             loss
+    #         )
+        
+    #     # # j primal with train set
+    #     # j_primal, S, loss = JPrimal(wStar, DTR_expanded, C, Z_L=Z_LTR)
+    #     # return j_primal, S, loss
+
+    #     # dual_loss = -_x
+    #     # dual_gap = j_primal - dual_loss
+            
+    #     # j primal with test set
+    #     j_primal_test, S_test, loss_test = JPrimal(wStar, DTE_expanded, C, Z_L=Z_LTE)
+    #     return j_primal_test, S_test, loss_test
+
     def _train_SVM_linear(self, DTR, LTR, DTE, LTE, C, K = 1):
-        Z = lib.compute_Z(LTR = LTR)
+        # import ipdb; ipdb.set_trace()
+        Z_LTR = lib.compute_Z(LTR = LTR)
+        Z_LTE = lib.compute_Z(LTR = LTE)
 
         # append to DTR an array of ones (Lab09-a)
         DTR_expanded = np.vstack([DTR, np.ones((1, DTR.shape[1]))*K])
@@ -335,34 +377,32 @@ class SVMLinearClassifier(BaseClassifier):
         # compute the G matrix (Lab09-b)
         G = np.dot(DTR_expanded.T, DTR_expanded)
 
-        # ho capito che calcola H da (Lab09-c) ma non ho capito perchè 
-        # moltiplica Z nella versione colv e rowv
-        H = lib.colv(Z) * lib.rowv(Z) * G
-        import ipdb; ipdb.set_trace()
+        # (Lab09-c) 
+        H = lib.colv(Z_LTR) * lib.rowv(Z_LTR) * G
+
         alphaStar, _x, _y = self._train_SVM(DTR = DTR, C = C, H = H)
 
-        wStar = np.dot(DTR_expanded, lib.colv(alphaStar) * lib.colv(Z))
+        wStar = np.dot(DTR_expanded, lib.colv(alphaStar) * lib.colv(Z_LTR))
 
-        def JPrimal(w, DT_expanded, C, Z):
+        def JPrimal(w, DT_expanded, C, Z_L):
             # Primal formulation (Lab09-e)
             S = np.dot(lib.rowv(w), DT_expanded)
-            loss = np.maximum(np.zeros(S.shape), 1 - Z * S).sum()
+            loss = np.maximum(np.zeros(S.shape), 1 - Z_L * S).sum()
             return (
                 0.5 * np.linalg.norm(w)**2 + C * loss, 
                 S, 
                 loss
             )
         
-        # j primal with train set
-        j_primal, S, loss = JPrimal(wStar, DTR_expanded, C, Z)
-        return j_primal, S, loss
+        # # j primal with train set
+        # j_primal, S, loss = JPrimal(wStar, DTR_expanded, C, Z_L=Z_LTR)
+        # return j_primal, S, loss
 
-        dual_loss = -_x
-        dual_gap = j_primal - dual_loss
+        # dual_loss = -_x
+        # dual_gap = j_primal - dual_loss
             
-        # j primal with test set
-        j_primal_test, S_test, loss_test = JPrimal(wStar, DTE_expanded, C, LTE)
-        return j_primal_test, S_test, loss_test
+        # # j primal with test set
+        j_primal_test, S_test, loss_test = JPrimal(wStar, DTE_expanded, C, Z_L=Z_LTE)
         return j_primal_test, S_test, loss_test
 
     def compute_score(self, DTE, LTE=None, C=0.1, K=1):

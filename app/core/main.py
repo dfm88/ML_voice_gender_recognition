@@ -93,7 +93,7 @@ def linear_logistic_regression(D, L, application_priors:list, nr_kfold_split, cf
             min_dcf_gau_not_regul = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_l, regularized=regularized, pi_T=pi_T)
             min_DCF_gau_regul_list.append(min_dcf_gau_not_regul)
             print(f"min DCF LOGISTIC REGRESSION 'z' REG by {pi_T} with prior={prior_cl_T} and lambda={_l}:  {min_dcfF_z_not_regul:.3f}")
-            print(f"min DCF LOGISTIC REGRESSION 'Gaussuanized' REG by {pi_T} with prior={prior_cl_T} and lambda={_l}:  {min_dcf_gau_not_regul:.3f}")
+            print(f"min DCF LOGISTIC REGRESSION 'Gaussianized' REG by {pi_T} with prior={prior_cl_T} and lambda={_l}:  {min_dcf_gau_not_regul:.3f}")
         return (min_DCF_z_regul_list, min_DCF_gau_regul_list)
 
 
@@ -134,7 +134,8 @@ def svm_linear(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     D_norm_gau = lib.gaussianization(D_norm, D_norm)
     # ###   - - - - -      SVM LINEAR REGRESSION  - - - - -    ####
     print(f'\SVM LINEAR WITH K FOLD ({nr_kfold_split} folds) ')
-    C_list = np.logspace(-3, 1, num=30)
+    C_list = np.logspace(-4, -2, num=30)
+    # C_list = np.logspace(-3, 1, num=30) mine
 
     def C_tuning(prior_cl_T):
         """
@@ -148,10 +149,10 @@ def svm_linear(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
         for c in C_list:
             min_dcfF_z = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c)
             min_DCF_z_list.append(min_dcfF_z)
-            min_dcf_gau = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c)
-            min_DCF_gau_list.append(min_dcf_gau)
-            print(f"min DCF SVM Linear 'z' with C:{c} and prior {prior_cl_T}:  {min_dcfF_z:.3f}")
-            print(f"min DCF SVM Linear 'Gaussuanized' with C:{c} and prior {prior_cl_T}:  {min_dcf_gau:.3f}")
+            # min_dcf_gau = lib.K_fold(D_norm_gau, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c)
+            # min_DCF_gau_list.append(min_dcf_gau)
+            print(f"min DCF SVM Linear 'z' with C:{c} and prior {prior_cl_T}:  {min_dcfF_z}")
+            # print(f"min DCF SVM Linear 'Gaussuanized' with C:{c} and prior {prior_cl_T}:  {min_dcf_gau:.3f}")
         return (min_DCF_z_list, min_DCF_gau_list)
 
     ### Estimating for different values of C
@@ -166,10 +167,10 @@ def svm_linear(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
         tot_gau_reg = tot_gau_reg + min_DCF_gau_regul_list
     print('\n\nmin DCF for Z')
     print(min(tot_z_reg))
-    print('\n\nmin DCF for gau')
-    print(min(tot_gau_reg))
+    # print('\n\nmin DCF for gau')
+    # print(min(tot_gau_reg))
     lib.plotDCF(C_list, tot_z_reg, 'C', 'SVM_linear_z')
-    lib.plotDCF(C_list, tot_gau_reg, 'C', 'SVM_linear_gau')
+    # lib.plotDCF(C_list, tot_gau_reg, 'C', 'SVM_linear_gau')
 
 
 if __name__ == '__main__':
@@ -184,11 +185,12 @@ if __name__ == '__main__':
 
     D, L = lib.load_binary_data(TRAINING_DATA_FILE, NR_FEATURES)
     # D, L = lib.load_iris_binary()
+    # D, L = lib.load_iris_binary_reduced(5)
     application_priors = [0.5, 0.9, 0.1]
     D_norm = lib.z_normalization(D)
     D_norm_gau = lib.gaussianization(D_norm, D_norm)
 
-    nr_kfold_split = 4
+    nr_kfold_split = 3
     cfp = 1
     cfn = 1
 

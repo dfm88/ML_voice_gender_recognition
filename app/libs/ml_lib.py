@@ -58,13 +58,20 @@ def load_iris_binary():
     L[L==2] = 0 # We assign label 0 to virginica (was label 2)
     return D, L
 
-def load_iris_binary_reduced() -> tuple:
+def load_iris_binary_reduced(one_sample_every:int = 10) -> tuple:
 
     data_reduced, labels_reduced = load_iris_binary()
     # data_reduced = all columns, 1 every 10 rows
     # labels_reduced = 1 every 10 column (1-d array)
-    return data_reduced[:, ::10], labels_reduced[::10]
+    D = data_reduced[:, ::one_sample_every]
+    L = labels_reduced[::one_sample_every]
+    print(f'reduced from {data_reduced.shape[1]} to {D.shape[1]}')
+    return D, L
 
+def ssort(D):
+    D_copy = D.copy()
+    D_copy.sort()
+    return D_copy
 
 def colv(arr):
     '''
@@ -369,7 +376,7 @@ def plot_pearson_heatmap(D, L, additional=''):
     seaborn.heatmap(np.corrcoef(D[:, L==1]), linewidth=0.2, cmap="Oranges", square=True, cbar=False)
     plt.savefig('plots/pearson/%s_Pearson_Female.jpg' % additional)
 
-def plotDCF(x, y, xlabel, model_name:str, regularized, pi_T=0.5):
+def plotDCF(x, y, xlabel, model_name:str, regularized=False, pi_T=0.5):
     plt.figure()
     title = 'Not Regularized' if not regularized else f'Regularized by \u03C0_T={pi_T}'
     plt.title(title)
@@ -578,7 +585,26 @@ def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, 
 
     tot_scores = []
     tot_LVA = []
-    for (DTR, LTR, DVA, LVA) in spilt_K_fold(D, L, k, seed):
+    
+    for i, (DTR, LTR, DVA, LVA) in enumerate(spilt_K_fold(D, L, k, seed)):
+        ''' SAVE TO FILE
+            # with open(f'my_ksplit_test/DTR_voice_{i}.txt', 'x') as f:
+            #     np.save(f, DTR)
+            # with open(f'my_ksplit_test/LTR_voice_{i}.txt', 'x') as f:
+            #     np.save(f, LTR)
+            # with open(f'my_ksplit_test/DVA_voice_{i}.txt', 'x') as f:
+            #     np.save(f, DVA)
+            # with open(f'my_ksplit_test/LVA_voice_{i}.txt', 'x') as f:
+            #     np.save(f, LVA)
+            file_DTR_pulsar = f'my_ksplit_test/DTR_pulsar_{i+1}_totSplit_{k}.txt'
+            file_LTR_pulsar = f'my_ksplit_test/LTR_pulsar_{i+1}_totSplit_{k}.txt'
+            file_DVA_pulsar = f'my_ksplit_test/DVA_pulsar_{i+1}_totSplit_{k}.txt'
+            file_LVA_pulsar = f'my_ksplit_test/LVA_pulsar_{i+1}_totSplit_{k}.txt'
+            np.save(file_DTR_pulsar, DTR)
+            np.save(file_LTR_pulsar, LTR)
+            np.save(file_DVA_pulsar, DVA)
+            np.save(file_LVA_pulsar, LVA)
+        '''
         classifier: BaseClassifier = classifier_class(DTR, LTR)
         classifier.compute_score(DVA, LVA, **classifier_kwargs)
         tot_scores.append(classifier.scores)
