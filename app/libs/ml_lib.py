@@ -586,7 +586,7 @@ def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, 
     tot_scores = []
     tot_LVA = []
     
-    for i, (DTR, LTR, DVA, LVA) in enumerate(spilt_K_fold(D, L, k, seed)):
+    for (DTR, LTR, DVA, LVA) in (spilt_K_fold(D, L, k, seed)):
         ''' SAVE TO FILE
             # with open(f'my_ksplit_test/DTR_voice_{i}.txt', 'x') as f:
             #     np.save(f, DTR)
@@ -609,6 +609,16 @@ def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, 
         classifier.compute_score(DVA, LVA, **classifier_kwargs)
         tot_scores.append(classifier.scores)
         tot_LVA.append(LVA)
+
+    ### ---- ----# for testing single split #---  ---   ###
+    # D, L = load_iris_binary()
+    # (DTR, LTR), (DVA, LVA) = split_db_2to1(D = D, L = L, seed = 0)
+    # import ipdb; ipdb.set_trace()
+    # classifier_kwargs['C'] = 10
+    # classifier: BaseClassifier = classifier_class(DTR, LTR)
+    # classifier.compute_score(DVA, LVA, **classifier_kwargs)
+    # tot_scores.append(classifier.scores)
+    # tot_LVA.append(LVA)
 
     # make a unique np.array with scores and labels
     # computed on each fold

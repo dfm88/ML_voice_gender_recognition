@@ -365,7 +365,6 @@ class SVMLinearClassifier(BaseClassifier):
     #     return j_primal_test, S_test, loss_test
 
     def _train_SVM_linear(self, DTR, LTR, DTE, LTE, C, K = 1):
-        # import ipdb; ipdb.set_trace()
         Z_LTR = lib.compute_Z(LTR = LTR)
         Z_LTE = lib.compute_Z(LTR = LTE)
 

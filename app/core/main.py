@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pylab
 
-PROVAAAAAAAAA = 'pulsar'
+PROVAAAAAAAAA = 'voice'
 
 if PROVAAAAAAAAA == 'voice':
     TRAINING_DATA_FILE = 'Gender_Detection/Train.txt'
@@ -134,8 +134,7 @@ def svm_linear(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     D_norm_gau = lib.gaussianization(D_norm, D_norm)
     # ###   - - - - -      SVM LINEAR REGRESSION  - - - - -    ####
     print(f'\SVM LINEAR WITH K FOLD ({nr_kfold_split} folds) ')
-    C_list = np.logspace(-4, -2, num=30)
-    # C_list = np.logspace(-3, 1, num=30) mine
+    C_list = np.logspace(-3, 1, num=30) 
 
     def C_tuning(prior_cl_T):
         """
@@ -190,7 +189,7 @@ if __name__ == '__main__':
     D_norm = lib.z_normalization(D)
     D_norm_gau = lib.gaussianization(D_norm, D_norm)
 
-    nr_kfold_split = 3
+    nr_kfold_split = 4
     cfp = 1
     cfn = 1
 
