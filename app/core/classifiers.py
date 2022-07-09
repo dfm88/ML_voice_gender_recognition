@@ -302,20 +302,48 @@ class SVMLinearClassifier(BaseClassifier):
         self.gamma = None
 
 
-    def _train_SVM(self, DTR, C, H):
+    def _train_SVM(self, DTR, LTR, C, H, rebalanced:bool=False, pi_T=0.5):
         """
         :DTR data training
+        :LTR label training
         :C Costs
         :H matrix H
+        :rebalanced if True rebalance computation of classes scores by pi_T
+        :pi_T prior of Class T for rebalancing
 
         returns alphastar and _x (dual loss) for SVM with scipy
             numerical calculator 
         """
+        tot_qt_samples = DTR.shape[1]
+        # @ bounds of dual formulation:
+        #     0 <= alfa_i <= C
+        # @ if we are rebalancing for the different classes:
+        #     0 <= alpha_i <= C_class_T # for sample class1
+        #     0 <= alpha_i <= C_class_F # for sample class2
+        #      # with C_class_x = C*(prior_class_x/empirical_prior_class_x)
+        #            # with: empirical_prior_class_x = n_sample_class_x / n_all_samples
+        if rebalanced:
+            # nr_samples_class_x / tot_nr_samples
+            empirical_prior_T = DTR[:LTR==1].shape[1] / tot_qt_samples
+            empirical_prior_F = DTR[:LTR==0].shape[1] / tot_qt_samples
+        
+            C_T = C*((pi_T) / empirical_prior_T)
+            C_F = C*((1 - pi_T) / empirical_prior_F)
+
+            bounds = list(
+                map(
+                    lambda x: (0, C_T) if x==1 else (0, C_F),
+                    LTR
+                )
+            )
+        else:
+            bounds =  [(0, C)] * tot_qt_samples
+
         dual_instance = lib.Dual(H)
         alphaStar, _x, _y = sp.optimize.fmin_l_bfgs_b(
             dual_instance.l_dual,
-            np.zeros(DTR.shape[1]),
-            bounds = [(0, C)] * DTR.shape[1],
+            np.zeros(tot_qt_samples),
+            bounds = bounds,
             factr = 0,
             maxiter = 100_000,
             maxfun = 100_000,
@@ -379,7 +407,7 @@ class SVMLinearClassifier(BaseClassifier):
         # (Lab09-c) 
         H = lib.colv(Z_LTR) * lib.rowv(Z_LTR) * G
 
-        alphaStar, _x, _y = self._train_SVM(DTR = DTR, C = C, H = H)
+        alphaStar, _x, _y = self._train_SVM(DTR = DTR, LTR = LTR, C = C, H = H)
 
         wStar = np.dot(DTR_expanded, lib.colv(alphaStar) * lib.colv(Z_LTR))
 
