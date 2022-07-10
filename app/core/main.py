@@ -270,34 +270,34 @@ def svm_kernel_polynomial(D, L, application_priors:list, nr_kfold_split, cfp, cf
 
     # ## Estimating for different combinations of C-c
     print(f'\n -- ------  APPLICATION PRIOR {PRIOR}')
-    min_DCF_z_regul_list = C_c_tuning(prior_cl_T=PRIOR)
-    print('\n\nmin DCF for Z')
-    print(min(min_DCF_z_regul_list))
-    lib.plot_dcf_kernelSVM(
-        x=C_list, 
-        y=min_DCF_z_regul_list, 
-        xlabel='C', 
-        model_name=f'SVM_POLYNOMIAL_z_prior_{PRIOR}', 
-        hyperpar_name='c',
-        hyperpar_list=_c_list
-    )
+    # min_DCF_z_regul_list = C_c_tuning(prior_cl_T=PRIOR)
+    # print('\n\nmin DCF for Z')
+    # print(min(min_DCF_z_regul_list))
+    # lib.plot_dcf_kernelSVM(
+    #     x=C_list, 
+    #     y=min_DCF_z_regul_list, 
+    #     xlabel='C', 
+    #     model_name=f'SVM_POLYNOMIAL_z_prior_{PRIOR}', 
+    #     hyperpar_name='c',
+    #     hyperpar_list=_c_list
+    # )
 
     # using C = ? and _c = ? from previous result, we'll try, for each application prior
     # different empirical priors
     C = 1
-    _c = '?'
+    _c = 10
     ## REGULARIZED
-    # for prior_cl_T in application_priors:
-    #     for pi_T in application_priors:
-    #         print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
-    #         min_dcf_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=True, pi_T=pi_T)
-    #         print(f"min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
+    for prior_cl_T in application_priors:
+        for pi_T in application_priors:
+            print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
+            min_dcf_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, _c=_c, rebalanced=True, pi_T=pi_T)
+            print(f"min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C={C} and _c={_c}:  {min_dcf_z:.3f}")
 
     ## NOT REGULARIZED
-    # for prior_cl_T in application_priors:
-    #     print(f'\n----- Prior {prior_cl_T} --- not regularized')
-    #     min_dcf_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=False)
-    #     print(f"min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
+    for prior_cl_T in application_priors:
+        print(f'\n----- Prior {prior_cl_T} --- not regularized')
+        min_dcf_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, _c=_c, rebalanced=False)
+        print(f"min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C={C} and _c={_c}:  {min_dcf_z:.3f}")
 
 
 if __name__ == '__main__':
@@ -333,7 +333,7 @@ if __name__ == '__main__':
 
     # svm_linear(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
-    svm_kernel_rbf(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    # svm_kernel_rbf(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
     svm_kernel_polynomial(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
