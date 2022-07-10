@@ -138,39 +138,35 @@ def svm_linear(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
 
     def C_tuning(prior_cl_T):
         """
-        returns 2 list 
-            one with C estimation for Raw features
-            one with C estimation for Gaussianized features
+        returns 1 list 
+            with C estimation for Raw features
     
         """
         min_DCF_z_list = []
-        min_DCF_gau_list = []
         for c in C_list:
             min_dcfF_z = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c)
             min_DCF_z_list.append(min_dcfF_z)
-            # min_dcf_gau = lib.K_fold(D_norm_gau, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c)
-            # min_DCF_gau_list.append(min_dcf_gau)
             print(f"min DCF SVM Linear 'z' with C:{c} and prior {prior_cl_T}:  {min_dcfF_z}")
-            # print(f"min DCF SVM Linear 'Gaussuanized' with C:{c} and prior {prior_cl_T}:  {min_dcf_gau:.3f}")
-        return (min_DCF_z_list, min_DCF_gau_list)
+        return min_DCF_z_list
 
-    ### Estimating for different values of C
-    tot_z_reg = []
-    tot_gau_reg=[]
-    # pi_T=0.5
-    # regularized=True
-    for prior in application_priors:
-        print(f'\n -- ------  APPLICATION PRIOR {prior}')
-        min_DCF_z_regul_list, min_DCF_gau_regul_list = C_tuning(prior_cl_T=prior)
-        tot_z_reg = tot_z_reg + min_DCF_z_regul_list
-        tot_gau_reg = tot_gau_reg + min_DCF_gau_regul_list
-    print('\n\nmin DCF for Z')
-    print(min(tot_z_reg))
-    # print('\n\nmin DCF for gau')
-    # print(min(tot_gau_reg))
-    lib.plotDCF(C_list, tot_z_reg, 'C', 'SVM_linear_z')
-    # lib.plotDCF(C_list, tot_gau_reg, 'C', 'SVM_linear_gau')
+    # ## Estimating for different values of C
+    # tot_z_reg = []
+    # for prior in application_priors:
+    #     print(f'\n -- ------  APPLICATION PRIOR {prior}')
+    #     min_DCF_z_regul_list = C_tuning(prior_cl_T=prior)
+    #     tot_z_reg = tot_z_reg + min_DCF_z_regul_list
+    # print('\n\nmin DCF for Z')
+    # print(min(tot_z_reg))
+    # lib.plotDCF(C_list, tot_z_reg, 'C', 'SVM_linear_z')
 
+    # using C = 1 from previous result, we'll try, for each application prior
+    # different empirical priors
+    C = 1
+    for prior_cl_T in application_priors:
+        for pi_T in application_priors:
+            print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
+            min_dcf_z = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=True, pi_T=pi_T)
+            print(f"min DCF LINEAR CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
 
 if __name__ == '__main__':
     import app.libs.ml_lib as lib
@@ -181,6 +177,7 @@ if __name__ == '__main__':
         LogisticRegressionClassifier,
         SVMLinearClassifier
     )
+    print('\t#\t# USING DATASET ---- ', PROVAAAAAAAAA, '\n')
 
     D, L = lib.load_binary_data(TRAINING_DATA_FILE, NR_FEATURES)
     # D, L = lib.load_iris_binary()

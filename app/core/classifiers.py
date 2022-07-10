@@ -30,7 +30,6 @@ class BaseClassifier(ABC):
     def classify(self, LTE):
         raise NotImplementedError
 
-
 class GaussianClassifier(BaseClassifier):
     """
     >>> score
@@ -188,7 +187,6 @@ class GaussianClassifier(BaseClassifier):
         error_rate = 100-accuracy
         return error_rate
 
-
 class GaussianBayesianClassifier(GaussianClassifier):
     def __init__(self, D, L):
         super(GaussianBayesianClassifier, self).__init__(
@@ -197,7 +195,6 @@ class GaussianBayesianClassifier(GaussianClassifier):
         )
         self.is_bayesian = True
 
-
 class GaussianTiedClassifier(GaussianClassifier):
     def __init__(self, D, L):
         super(GaussianTiedClassifier, self).__init__(
@@ -205,7 +202,6 @@ class GaussianTiedClassifier(GaussianClassifier):
             L,
             is_tied = True
         )
-
 
 class LogisticRegressionClassifier(BaseClassifier):
 
@@ -288,7 +284,6 @@ class LogisticRegressionClassifier(BaseClassifier):
     def classify(self, LTE):
         raise NotImplementedError
 
-
 class SVMLinearClassifier(BaseClassifier):
 
     def __init__(self, D, L):
@@ -324,8 +319,8 @@ class SVMLinearClassifier(BaseClassifier):
         #            # with: empirical_prior_class_x = n_sample_class_x / n_all_samples
         if rebalanced:
             # nr_samples_class_x / tot_nr_samples
-            empirical_prior_T = DTR[:LTR==1].shape[1] / tot_qt_samples
-            empirical_prior_F = DTR[:LTR==0].shape[1] / tot_qt_samples
+            empirical_prior_T = DTR[:, LTR==1].shape[1] / tot_qt_samples
+            empirical_prior_F = DTR[:, LTR==0].shape[1] / tot_qt_samples
         
             C_T = C*((pi_T) / empirical_prior_T)
             C_F = C*((1 - pi_T) / empirical_prior_F)
@@ -392,7 +387,7 @@ class SVMLinearClassifier(BaseClassifier):
     #     j_primal_test, S_test, loss_test = JPrimal(wStar, DTE_expanded, C, Z_L=Z_LTE)
     #     return j_primal_test, S_test, loss_test
 
-    def _train_SVM_linear(self, DTR, LTR, DTE, LTE, C, K = 1):
+    def _train_SVM_linear(self, DTR, LTR, DTE, LTE, C, K = 1, rebalanced:bool=False, pi_T=0.5):
         Z_LTR = lib.compute_Z(LTR = LTR)
         Z_LTE = lib.compute_Z(LTR = LTE)
 
@@ -407,7 +402,7 @@ class SVMLinearClassifier(BaseClassifier):
         # (Lab09-c) 
         H = lib.colv(Z_LTR) * lib.rowv(Z_LTR) * G
 
-        alphaStar, _x, _y = self._train_SVM(DTR = DTR, LTR = LTR, C = C, H = H)
+        alphaStar, _x, _y = self._train_SVM(DTR = DTR, LTR = LTR, C = C, H = H, rebalanced=rebalanced, pi_T=pi_T)
 
         wStar = np.dot(DTR_expanded, lib.colv(alphaStar) * lib.colv(Z_LTR))
 
@@ -432,7 +427,7 @@ class SVMLinearClassifier(BaseClassifier):
         j_primal_test, S_test, loss_test = JPrimal(wStar, DTE_expanded, C, Z_L=Z_LTE)
         return j_primal_test, S_test, loss_test
 
-    def compute_score(self, DTE, LTE=None, C=0.1, K=1):
+    def compute_score(self, DTE, LTE=None, C=0.1, K=1, rebalanced:bool=False, pi_T=0.5):
         """Returns scores"""
         self.C = C
         self.K = K
@@ -444,6 +439,8 @@ class SVMLinearClassifier(BaseClassifier):
             C=C,
             LTE=LTE,
             K=K,
+            rebalanced=rebalanced,
+            pi_T=pi_T,
         )
         self.scores = scores.ravel() # XXX need to ravel
         return self.scores
