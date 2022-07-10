@@ -347,46 +347,6 @@ class SVMLinearClassifier(BaseClassifier):
 
         return alphaStar, _x, _y
 
-    # def _train_SVM_linear(self, DTR, LTR, DTE, LTE, C, K = 1):
-    #     Z_LTR = lib.compute_Z(LTR = LTR)
-    #     Z_LTE = lib.compute_Z(LTR = LTE)
-
-    #     # append to DTR an array of ones (Lab09-a)
-    #     DTR_expanded = np.vstack([DTR, np.ones((1, DTR.shape[1]))*K])
-
-    #     DTE_expanded = np.vstack([DTE, np.ones((1, DTE.shape[1]))*K])
-
-    #     # compute the G matrix (Lab09-b)
-    #     G = np.dot(DTR_expanded.T, DTR_expanded)
-
-    #     # H = lib.colv(Z_LTR) * lib.rowv(Z_LTR) * G
-    #     H = lib.colv(LTR) * lib.rowv(LTR) * G
-    #     alphaStar, _x, _y = self._train_SVM(DTR = DTR, C = C, H = H)
-
-    #     # wStar = np.dot(DTR_expanded, lib.colv(alphaStar) * lib.colv(Z_LTR))
-    #     wStar = np.dot(DTR_expanded, lib.colv(alphaStar) * lib.colv(LTR))
-
-    #     def JPrimal(w, DT_expanded, C, Z_L):
-    #         # Primal formulation (Lab09-e)
-    #         S = np.dot(lib.rowv(w), DT_expanded)
-    #         loss = np.maximum(np.zeros(S.shape), 1 - Z_L * S).sum()
-    #         return (
-    #             0.5 * np.linalg.norm(w)**2 + C * loss, 
-    #             S, 
-    #             loss
-    #         )
-        
-    #     # # j primal with train set
-    #     # j_primal, S, loss = JPrimal(wStar, DTR_expanded, C, Z_L=Z_LTR)
-    #     # return j_primal, S, loss
-
-    #     # dual_loss = -_x
-    #     # dual_gap = j_primal - dual_loss
-            
-    #     # j primal with test set
-    #     j_primal_test, S_test, loss_test = JPrimal(wStar, DTE_expanded, C, Z_L=Z_LTE)
-    #     return j_primal_test, S_test, loss_test
-
     def _train_SVM_linear(self, DTR, LTR, DTE, LTE, C, K = 1, rebalanced:bool=False, pi_T=0.5):
         Z_LTR = lib.compute_Z(LTR = LTR)
         Z_LTE = lib.compute_Z(LTR = LTE)
@@ -451,3 +411,73 @@ class SVMLinearClassifier(BaseClassifier):
 
     def classify(self, LTE):
         raise NotImplementedError
+
+
+class SVMKernelRBFClassifier(SVMLinearClassifier):
+
+    def __init__(self, D, L):
+        super(SVMKernelRBFClassifier, self).__init__(
+            D,
+            L,
+        )
+
+    def _train_SVM_kernel_RBF(self, DTR, LTR, DTE, C, LTE, K = 1, gamma = 1, rebalanced:bool=False, pi_T=0.5):
+        """
+        TRAINING
+        """
+        print(f'Training SVM RBF with C={C}, K={K}, gamma={gamma}, rebalanced ? {rebalanced}, pi_T={pi_T}')
+        Z_LTR = lib.compute_Z(LTR = LTR)
+        Z_LTE = lib.compute_Z(LTR = LTE)
+
+        # cacololo di (Lab09-l)
+        kernel_rbf = lambda x1, x2: np.exp( -gamma * (np.linalg.norm(x1 - x2) ** 2)) + K ** 2
+
+        # Compute the H matrix exploiting broadcasting
+        kernel_rbf_function = np.zeros((DTR.shape[1], DTR.shape[1]))
+        for i in range(DTR.shape[1]):
+            for j in range(DTR.shape[1]):
+                kernel_rbf_function[i,j] = kernel_rbf(x1=DTR[:,i], x2=DTR[:,j])
+        # cacololo di (Lab09-f)
+        H = lib.colv(Z_LTR) * lib.rowv(Z_LTR) * kernel_rbf_function
+
+        alphaStar, _x, _y = self._train_SVM(DTR = DTR, LTR=LTR, C = C, H = H, rebalanced=rebalanced, pi_T=pi_T)
+
+        """
+        CLASSIFICATION
+        """
+        # COMPUTE SCORES FORM alphaStar and make predictions on test samples    
+        # cacololo di (Lab09-g)
+        S = np.zeros(DTE.shape[1]) # l'array degli scores sarà lungo come i dati di test
+        # for each test sample xt(i), iterate for all training sample(j) to compute score
+        for i in range(DTE.shape[1]):
+            for j in range(DTR.shape[1]):
+                # if alpha == 0 the point is not supervector, avoid computation
+                if alphaStar[j] == 0:
+                    continue
+                S[i] += alphaStar[j] * Z_LTR[j] * kernel_rbf(x1 = DTR[:,j], x2 = DTE[:,i])
+
+        return S
+
+        accuracy, error_rate = compute_binary_accuracy_and_error(SCORE = S, LTE = Z_LTE) # Z_LTE ?
+        # Compute dual loss
+        dl = -_x
+        print("K=%d, C=%f, RBF (gamma=%d), Dual loss=%e, Error rate=%.1f %%" % (K, C, gamma, dl, error_rate))
+
+    def compute_score(self, DTE, LTE=None, C=0.1, K=1,  gamma=1, rebalanced:bool=False, pi_T=0.5):
+        """Returns scores"""
+        self.C = C
+        self.K = K
+
+        scores = self._train_SVM_kernel_RBF(
+            DTR=self.D,
+            LTR=self.L,
+            DTE=DTE,
+            C=C,
+            LTE=LTE,
+            K=K,
+            gamma=gamma,
+            rebalanced=rebalanced,
+            pi_T=pi_T,
+        )
+        self.scores = scores.ravel() # XXX need to ravel
+        return self.scores
