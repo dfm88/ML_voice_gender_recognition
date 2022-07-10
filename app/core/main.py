@@ -111,8 +111,8 @@ def linear_logistic_regression(D, L, application_priors:list, nr_kfold_split, cf
     # print(min(tot_z_reg))
     # print('\n\nmin DCF for gau')
     # print(min(tot_gau_reg))
-    # lib.plotDCF(_lambdas, tot_z_reg, 'lambda', 'LR_z_regularized', regularized=regularized, pi_T=pi_T)
-    # lib.plotDCF(_lambdas, tot_gau_reg, 'lambda', 'LR_gau_regularized', regularized=regularized, pi_T=pi_T)
+    # lib.plot_dcf(_lambdas, tot_z_reg, 'lambda', 'LR_z_regularized', regularized=regularized, pi_T=pi_T)
+    # lib.plot_dcf(_lambdas, tot_gau_reg, 'lambda', 'LR_gau_regularized', regularized=regularized, pi_T=pi_T)
 
 
     # using lambda = 0 from previous result, we'll try, for each application prior
@@ -166,7 +166,7 @@ def svm_linear(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     #     tot_z_reg = tot_z_reg + min_DCF_z_regul_list
     # print('\n\nmin DCF for Z')
     # print(min(tot_z_reg))
-    # lib.plotDCF(C_list, tot_z_reg, 'C', 'SVM_linear_z')
+    # lib.plot_dcf(C_list, tot_z_reg, 'C', 'SVM_linear_z')
 
     # using C = 1 from previous result, we'll try, for each application prior
     # different empirical priors
@@ -194,6 +194,8 @@ def svm_kernel_rbf(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     print(f'\SVM KERNEL RBF WITH K FOLD ({nr_kfold_split} folds) ')
     C_list = np.logspace(-3, 1, num=20)
     gamma_list = [10**(-2), 10**(-1), 10**(0)]
+    PRIOR = 0.5 # since we have 2 hyperparameters (C and gamma) we'll only consider our main application prior
+
 
     def C_gamma_tuning(prior_cl_T):
         """
@@ -202,24 +204,28 @@ def svm_kernel_rbf(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     
         """
         min_DCF_z_list = []
-        for c in C_list:
-            for gamma in gamma_list:
+        for gamma in gamma_list:
+            for c in C_list:
                 min_dcfF_z = lib.K_fold(D_norm, L, SVMKernelRBFClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c, gamma=gamma)
                 min_DCF_z_list.append(min_dcfF_z)
-                print(f"min DCF SVM Linear 'z' with C:{c} and gamma:{gamma} and prior {prior_cl_T}:  {min_dcfF_z}")
+                print(f"min DCF SVM  KERNEL RBF 'z' with C:{c} and gamma:{gamma} and prior {prior_cl_T}:  {min_dcfF_z}")
         return min_DCF_z_list
 
     # ## Estimating for different combinations of C-gamma
-    tot_z_reg = []
-    for i, prior in enumerate(application_priors):
-        print(f'\n -- ------  APPLICATION PRIOR {prior}')
-        min_DCF_z_regul_list = C_gamma_tuning(prior_cl_T=prior)
-        tot_z_reg = tot_z_reg + min_DCF_z_regul_list
-        print('\n\nmin DCF for Z')
-        print(min(tot_z_reg))
-        lib.plotDCF(x=C_list, y=tot_z_reg, xlabel=f'C-gamma {gamma_list[i]}',  model_name=f'SVM_RBF_z_gamma_{gamma_list[i]}__prior_{prior}')
+    print(f'\n -- ------  APPLICATION PRIOR {PRIOR}')
+    min_DCF_z_regul_list = C_gamma_tuning(prior_cl_T=PRIOR)
+    print('\n\nmin DCF for Z')
+    print(min(min_DCF_z_regul_list))
+    lib.plot_dcf_kernelSVM(
+        x=C_list, 
+        y=min_DCF_z_regul_list, 
+        xlabel=f'C', 
+        model_name=f'SVM_RBF_z_prior_{PRIOR}',
+        hyperpar_name='\u03B3',
+        hyperpar_list=gamma_list
+    )
 
-    # using C = 1 and gamma = ? from previous result, we'll try, for each application prior
+    # using C = ? and gamma = ? from previous result, we'll try, for each application prior
     # different empirical priors
     C = 1
     gamma = '?'
@@ -228,14 +234,70 @@ def svm_kernel_rbf(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     #     for pi_T in application_priors:
     #         print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
     #         min_dcf_z = lib.K_fold(D_norm, L, SVMKernelRBFClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=True, pi_T=pi_T)
-    #         print(f"min DCF LINEAR CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
+    #         print(f"min DCF  KERNEL RBF CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
 
     ## NOT REGULARIZED
     # for prior_cl_T in application_priors:
     #     print(f'\n----- Prior {prior_cl_T} --- not regularized')
     #     min_dcf_z = lib.K_fold(D_norm, L, SVMKernelRBFClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=False)
-    #     print(f"min DCF LINEAR CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
+    #     print(f"min DCF  KERNEL RBF CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
 
+
+def svm_kernel_polynomial(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
+    """
+    SVM KERNEL POLYNOMIAL DEGREE 2 TRAINING
+    """
+    D_norm = lib.z_normalization(D)
+    # ###   - - - - -      SVM KERNEL POLYNOMIAL DEGREE 2  - - - - -    ####
+    print(f'\SVM KERNEL POLYNOMIAL DEGREE 2 WITH K FOLD ({nr_kfold_split} folds) ')
+    C_list = np.logspace(-3, 1, num=20)
+    _c_list = [0, 1, 10]
+    PRIOR = 0.5 # since we have 2 hyperparameters (C and _c) we'll only consider our main application prior
+
+    def C_c_tuning(prior_cl_T):
+        """
+        returns 1 list 
+            with C estimation for Raw features for different values of c
+    
+        """
+        min_DCF_z_list = []
+        for _c in _c_list:  
+            for c in C_list:
+                min_dcfF_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c, _c=_c)
+                min_DCF_z_list.append(min_dcfF_z)
+                print(f"min DCF SVM KERNEL POLYNOMIAL DEGREE 2 'z' with C:{c} and _c:{_c} and prior {prior_cl_T}:  {min_dcfF_z}")
+        return min_DCF_z_list
+
+    # ## Estimating for different combinations of C-c
+    print(f'\n -- ------  APPLICATION PRIOR {PRIOR}')
+    min_DCF_z_regul_list = C_c_tuning(prior_cl_T=PRIOR)
+    print('\n\nmin DCF for Z')
+    print(min(min_DCF_z_regul_list))
+    lib.plot_dcf_kernelSVM(
+        x=C_list, 
+        y=min_DCF_z_regul_list, 
+        xlabel='C', 
+        model_name=f'SVM_POLYNOMIAL_z_prior_{PRIOR}', 
+        hyperpar_name='c',
+        hyperpar_list=_c_list
+    )
+
+    # using C = ? and _c = ? from previous result, we'll try, for each application prior
+    # different empirical priors
+    C = 1
+    _c = '?'
+    ## REGULARIZED
+    # for prior_cl_T in application_priors:
+    #     for pi_T in application_priors:
+    #         print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
+    #         min_dcf_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=True, pi_T=pi_T)
+    #         print(f"min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
+
+    ## NOT REGULARIZED
+    # for prior_cl_T in application_priors:
+    #     print(f'\n----- Prior {prior_cl_T} --- not regularized')
+    #     min_dcf_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=False)
+    #     print(f"min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
 
 
 if __name__ == '__main__':
@@ -246,12 +308,13 @@ if __name__ == '__main__':
         GaussianTiedClassifier,
         LogisticRegressionClassifier,
         SVMLinearClassifier,
-        SVMKernelRBFClassifier
+        SVMKernelRBFClassifier,
+        SVMKernelPolynomialClassifier,
     )
     print('\t#\t# USING DATASET ---- ', PROVAAAAAAAAA, '\n')
 
-    # D, L = lib.load_binary_data(TRAINING_DATA_FILE, NR_FEATURES)
-    D, L = lib.load_iris_binary()
+    D, L = lib.load_binary_data(TRAINING_DATA_FILE, NR_FEATURES)
+    # D, L = lib.load_iris_binary()
     # D, L = lib.load_iris_binary_reduced(5)
     application_priors = [0.5, 0.9, 0.1]
     D_norm = lib.z_normalization(D)
@@ -271,6 +334,8 @@ if __name__ == '__main__':
     # svm_linear(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
     svm_kernel_rbf(D, L, application_priors, nr_kfold_split, cfp, cfn)
+
+    svm_kernel_polynomial(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
 
 

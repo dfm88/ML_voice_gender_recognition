@@ -1,7 +1,7 @@
 import sys
 sys.path.append('.')
 from ast import Yield
-from typing import Tuple
+from typing import Annotated, List, Tuple
 import numpy as np
 import scipy as sp
 import csv
@@ -376,7 +376,7 @@ def plot_pearson_heatmap(D, L, additional=''):
     seaborn.heatmap(np.corrcoef(D[:, L==1]), linewidth=0.2, cmap="Oranges", square=True, cbar=False)
     plt.savefig('plots/pearson/%s_Pearson_Female.jpg' % additional)
 
-def plotDCF(x, y, xlabel, model_name:str, regularized=False, pi_T=0.5):
+def plot_dcf(x, y, xlabel, model_name:str, regularized=False, pi_T=0.5):
     plt.figure()
     title = 'Not Regularized' if not regularized else f'Regularized by \u03C0_T={pi_T}'
     plt.title(title)
@@ -386,6 +386,24 @@ def plotDCF(x, y, xlabel, model_name:str, regularized=False, pi_T=0.5):
     plt.xlim([min(x), max(x)])
     plt.xscale("log")
     plt.legend(["min DCF \u03C0=0.5", "min DCF \u03C0=0.9", "min DCF \u03C0=0.1"])
+    plt.xlabel(xlabel)
+    plt.ylabel("min DCF")
+
+    plt.savefig(f'plots/DCF/{model_name}.jpg')
+
+def plot_dcf_kernelSVM(x, y, xlabel, model_name:str, regularized=False, pi_T=0.5, prior=0.5, hyperpar_name='', hyperpar_list:Annotated[List, 3]=None):
+    if hyperpar_list is None or len(hyperpar_list) != 3:
+        raise ValueError('Expected 3 values for the hyperparameter')
+    plt.figure()
+    title = 'Not Regularized' if not regularized else f'Regularized by \u03C0_T={pi_T}'
+    title = '{} - Prior \u03C0={}'.format(title, prior)
+    plt.title(title)
+    plt.plot(x, y[0:len(x)], label=f'min DCF {hyperpar_name}={hyperpar_list[0]}', color='b')
+    plt.plot(x, y[len(x): 2*len(x)], label=f'min DCF {hyperpar_name}={hyperpar_list[1]}', color='r')
+    plt.plot(x, y[2*len(x): 3*len(x)], label=f'min DCF {hyperpar_name}={hyperpar_list[2]}', color='g')
+    plt.xlim([min(x), max(x)])
+    plt.xscale("log")
+    plt.legend([f"min DCF {hyperpar_name}={hyperpar_list[0]}", f"min DCF {hyperpar_name}={hyperpar_list[1]}", f"min DCF {hyperpar_name}={hyperpar_list[2]}"])
     plt.xlabel(xlabel)
     plt.ylabel("min DCF")
     plt.savefig(f'plots/DCF/{model_name}.jpg')

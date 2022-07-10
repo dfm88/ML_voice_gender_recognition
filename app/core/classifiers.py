@@ -481,3 +481,78 @@ class SVMKernelRBFClassifier(SVMLinearClassifier):
         )
         self.scores = scores.ravel() # XXX need to ravel
         return self.scores
+
+
+
+class SVMKernelPolynomialClassifier(SVMLinearClassifier):
+
+    def __init__(self, D, L):
+        super(SVMKernelPolynomialClassifier, self).__init__(
+            D,
+            L,
+        )
+
+    def train_SVM_kernel_Polynomial(self, DTR, LTR, DTE, C, LTE, K = 1, _c = 1, rebalanced:bool=False, pi_T=0.5):
+        """
+        TRAINING
+        """
+        polynomial_degree = 2
+        d = polynomial_degree
+        # print(f'Training SVM polynomial with C={C}, K={K}, _c={_c}, polynomial degree={polynomial_degree}, rebalanced ? {rebalanced}, pi_T={pi_T}')
+        Z_LTR = lib.compute_Z(LTR = LTR)
+        Z_LTE = lib.compute_Z(LTR = LTE)
+
+
+        # cacololo di (Lab09-h)
+        polynomial_rbf = lambda x1, x2: (np.dot(x1.T, x2) + _c) ** d + K ** 2
+
+        # Compute the H matrix exploiting broadcasting
+        kernel_poly_funnction = np.zeros((DTR.shape[1], DTR.shape[1]))
+        for i in range(DTR.shape[1]):
+            for j in range(DTR.shape[1]):
+                kernel_poly_funnction[i,j] = polynomial_rbf(x1=DTR[:,i], x2=DTR[:,j])
+        # cacololo di (Lab09-f)
+        H = lib.colv(Z_LTR) * lib.rowv(Z_LTR) * kernel_poly_funnction
+
+        alphaStar, _x, _y = self._train_SVM(DTR = DTR, LTR=LTR, C = C, H = H, rebalanced=rebalanced, pi_T=pi_T)
+
+        """
+        CLASSIFICATION
+        """
+        # COMPUTE SCORES FORM alphaStar and make predictions on test samples    
+        # cacololo di (Lab09-g)
+        S = np.zeros(DTE.shape[1]) # l'array degli scores sarà lungo come i dati di test
+        # for each test sample xt(i), iterate for all training sample(j) to compute score
+        for i in range(DTE.shape[1]):
+            for j in range(DTR.shape[1]):
+                # if alpha == 0 the point is not supervector, avoid computation
+                if alphaStar[j] == 0:
+                    continue
+                S[i] += alphaStar[j] * Z_LTR[j] * polynomial_rbf(x1 = DTR[:,j], x2 = DTE[:,i])
+
+        return S
+
+        accuracy, error_rate = compute_binary_accuracy_and_error(SCORE = S, LTE = Z_LTE)
+        # Compute dual loss
+        dl = -_x
+
+        print("K=%d, C=%f, Kernel Poly (d=%d, _c=%d), Dual loss=%e, Error rate=%.1f %%" % (K, C, d, _c, dl, error_rate))
+
+    def compute_score(self, DTE, LTE=None, C=0.1, K=1, _c=1, rebalanced:bool=False, pi_T=0.5):
+        """Returns scores"""
+        self.C = C
+        self.K = K
+
+        scores = self.train_SVM_kernel_Polynomial(
+            DTR=self.D,
+            LTR=self.L,
+            DTE=DTE,
+            C=C,
+            LTE=LTE,
+            K=K,
+            _c=_c,
+            rebalanced=rebalanced,
+            pi_T=pi_T,
+        )
+        self.scores = scores.ravel() # XXX need to ravel
+        return self.scores
