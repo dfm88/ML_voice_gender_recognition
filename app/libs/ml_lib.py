@@ -1,7 +1,7 @@
 import sys
 sys.path.append('.')
 from ast import Yield
-from typing import Annotated, List, Tuple
+from typing import List, Tuple
 import numpy as np
 import scipy as sp
 import csv
@@ -391,7 +391,7 @@ def plot_dcf(x, y, xlabel, model_name:str, regularized=False, pi_T=0.5):
 
     plt.savefig(f'plots/DCF/{model_name}.jpg')
 
-def plot_dcf_kernelSVM(x, y, xlabel, model_name:str, regularized=False, pi_T=0.5, prior=0.5, hyperpar_name='', hyperpar_list:Annotated[List, 3]=None):
+def plot_dcf_kernelSVM(x, y, xlabel, model_name:str, regularized=False, pi_T=0.5, prior=0.5, hyperpar_name='', hyperpar_list:list=None):
     if hyperpar_list is None or len(hyperpar_list) != 3:
         raise ValueError('Expected 3 values for the hyperparameter')
     plt.figure()

@@ -498,7 +498,7 @@ class SVMKernelPolynomialClassifier(SVMLinearClassifier):
         """
         polynomial_degree = 2
         d = polynomial_degree
-        # print(f'Training SVM polynomial with C={C}, K={K}, _c={_c}, polynomial degree={polynomial_degree}, rebalanced ? {rebalanced}, pi_T={pi_T}')
+        print(f'Training SVM polynomial with C={C}, K={K}, _c={_c}, polynomial degree={polynomial_degree}, rebalanced ? {rebalanced}, pi_T={pi_T}')
         Z_LTR = lib.compute_Z(LTR = LTR)
         Z_LTE = lib.compute_Z(LTR = LTE)
 
