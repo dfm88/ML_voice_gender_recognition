@@ -408,6 +408,26 @@ def plot_dcf_kernelSVM(x, y, xlabel, model_name:str, regularized=False, pi_T=0.5
     plt.ylabel("min DCF")
     plt.savefig(f'plots/DCF/{model_name}.jpg')
 
+def plot_dcf_gmm(prior1_res:list, prior2_res:list, prior3_res:list, components:list, model_name):
+    N = len(components)
+    ind = np.arange(N) 
+    width = 0.25
+
+    bar1 = plt.bar(ind, prior1_res, width, color = 'b')
+    
+    bar2 = plt.bar(ind+width, prior2_res, width, color='r')
+    
+    bar3 = plt.bar(ind+width*2, prior3_res, width, color = 'g')
+
+    plt.xlabel("Components")
+    plt.ylabel('min DCF')
+    plt.title(f"GMM {model_name}")
+    
+    plt.xticks(ind+width,components)
+    plt.legend( (bar1, bar2, bar3), ('\u03C0=0.5', '\u03C0=0.9', '\u03C0=0.1') )
+    plt.savefig(f'plots/DCF/GMM_{model_name}.jpg')
+
+
 def gaussianization(DTR, DTE):
     """
     DTE can also be the same of DTR in case of training

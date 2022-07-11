@@ -341,8 +341,8 @@ class SVMLinearClassifier(BaseClassifier):
             np.zeros(tot_qt_samples),
             bounds = bounds,
             factr = 0,
-            maxiter = 100_000,
-            maxfun = 100_000,
+            maxiter = 10_000,
+            maxfun = 10_000,
             # iprint=1
         )
 

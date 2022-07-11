@@ -312,13 +312,17 @@ def gmm(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     ###   - - - - -  GMM GAUSSIAN NORMAL  - - - - -    ####
     print(f'\nGMM GAUSSIAN FULL COV WITH K FOLD ({nr_kfold_split} folds) ')
     algorithm_list = ['full_cov', 'diag_cov', 'tied_cov']
-    nr_components_list=[1, 2, 4, 8, 16]
+    nr_components_list=[1, 2, 4, 8, 16, 32]
+    priors_res = {}
     for algorithm in algorithm_list: 
         print(f'\nGMM Algorithm {algorithm}')
-        for nr_components in nr_components_list:
-            for prior_cl_T in application_priors:
+        for prior_cl_T in application_priors:
+            priors_res[str(prior_cl_T)] = []
+            for nr_components in nr_components_list:
                 min_dcf = lib.K_fold(D_norm, L, GmmClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, algorithm=algorithm, nr_clusters=nr_components)
+                priors_res[str(prior_cl_T)].append(min_dcf)
                 print(F"min DCF GMM {algorithm} with prior=%.1f and components={nr_components}:  %.3f\n" %(prior_cl_T, min_dcf))
+        lib.plot_dcf_gmm(prior1_res=priors_res['0.5'], prior2_res=priors_res['0.9'], prior3_res=priors_res['0.1'], components=nr_components_list, model_name=f'{algorithm}')
 
 
 
