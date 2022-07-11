@@ -587,7 +587,7 @@ class GMMClassifierMixin:
             weight = np.log(gmm[g]['weight']) # (prior)
             Cov = gmm[g]['cov']
             # fill Scores matrix line by line (each line a cluster)
-            S[g, :] = lib.logpdf_GAU_ND_perfect(X=X, mu=mu, C=Cov)
+            S[g, :] = lib.logpdf_GAU_ND(X=X, mu=mu, C=Cov)
 
         return S
 
@@ -644,7 +644,7 @@ class GMMClassifierMixin:
                 mu = gmm[g]['mean']
                 weight = np.log(gmm[g]['weight']) # (prior)
                 Cov = gmm[g]['cov']
-                SJ[g, :] = lib.logpdf_GAU_ND_perfect(X=X, mu=mu, C=Cov)
+                SJ[g, :] = lib.logpdf_GAU_ND(X=X, mu=mu, C=Cov)
                 # add prior (weight) to scores
                 SJ[g, :] += weight
             # sum along Y axis (lab10_b)
@@ -696,14 +696,14 @@ class GMMClassifierMixin:
                 # constraints must be evaluated after Tied or Diagonal
                 # computation (see Lab10)
                 if constraint:
-                    Tied_Cov = self._compute_Cov_constrained(Cov=Tied_Cov, constraint_threshold=constraint_threshold)
+                    Tied_Cov = self.compute_Cov_constrained(Cov=Tied_Cov, constraint_threshold=constraint_threshold)
                 # update GMMs with new tied Cov
                 for g in range(G):
                     gmm_new[g]['cov'] = Tied_Cov
             else:
                 if constraint:
                     for g in range(G):
-                        gmm_new[g]['cov'] = self._compute_Cov_constrained(Cov=gmm_new[g]['cov'], constraint_threshold=constraint_threshold)
+                        gmm_new[g]['cov'] = self.compute_Cov_constrained(Cov=gmm_new[g]['cov'], constraint_threshold=constraint_threshold)
 
             gmm = gmm_new
             
@@ -722,7 +722,7 @@ class GMMClassifierMixin:
                         # raise ValidationErr('LLR decreased for 3 times')
         return gmm
 
-    def _compute_Cov_constrained(self, Cov, constraint_threshold:float=0.01):
+    def compute_Cov_constrained(self, Cov, constraint_threshold:float=0.01):
         """
         lab10_t
         constraints the eigenvalues to be larger than the 
@@ -902,20 +902,24 @@ class GMMClassifierMixin:
             
             scores_list.append(test_data_scores)
 
+            # for each GMM compute the Posterior of Test Data
+            test_data_posterior = self.GMM_ll_per_sample(
+                scores = test_data_scores,
+                gmm = result_GMM
+            )
+
+
+            marginal_likehood.append(test_data_posterior)
+
         scores_matrix_for_cluster = np.vstack(scores_list)
-        return scores_matrix_for_cluster
-
-        #     # for each GMM compute the Posterior of Test Data
-        #     test_data_posterior = self.GMM_ll_per_sample(
-        #         scores = test_data_scores,
-        #         gmm = result_GMM
-        #     )
+        # return scores_matrix_for_cluster
 
 
-        #     marginal_likehood.append(test_data_posterior)
+        # Matrix row=Clusters, columns=Posteriors
+        Posteriors_Matrix_for_cluster = np.vstack(marginal_likehood)
 
-        # # Matrix row=Clusters, columns=Posteriors
-        # Posteriors_Matrix_for_cluster = np.vstack(marginal_likehood)
+        return Posteriors_Matrix_for_cluster[1] - Posteriors_Matrix_for_cluster[0]
+
         # # Compute the predicted labels
         # predicted_lab = np.argmax(Posteriors_Matrix_for_cluster, axis=0)
         # nr_correct_predictions = np.array(predicted_lab == LTE).sum()
@@ -924,7 +928,7 @@ class GMMClassifierMixin:
         # return error_rate
 
 
-class SVMLinearClassifier(BaseClassifier, GMMClassifierMixin):
+class GmmClassifier(BaseClassifier, GMMClassifierMixin):
     """
     >>> score
     >>> train
@@ -961,6 +965,7 @@ class SVMLinearClassifier(BaseClassifier, GMMClassifierMixin):
         self.scores = self._gmm_scores(
             DTR=self.D,
             LTR=self.L,
+            LTE=LTE,
             DTE=DTE,
             algorithm=algorithm,
             nr_clusters=nr_clusters,

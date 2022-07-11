@@ -269,7 +269,7 @@ def svm_kernel_polynomial(D, L, application_priors:list, nr_kfold_split, cfp, cf
         return min_DCF_z_list
 
     # ## Estimating for different combinations of C-c
-    print(f'\n -- ------  APPLICATION PRIOR {PRIOR}')
+    # print(f'\n -- ------  APPLICATION PRIOR {PRIOR}')
     # min_DCF_z_regul_list = C_c_tuning(prior_cl_T=PRIOR)
     # print('\n\nmin DCF for Z')
     # print(min(min_DCF_z_regul_list))
@@ -300,6 +300,29 @@ def svm_kernel_polynomial(D, L, application_priors:list, nr_kfold_split, cfp, cf
         print(f"min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C={C} and _c={_c}:  {min_dcf_z:.3f}")
 
 
+def gmm(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
+    """
+    GMM TRAINING
+    """
+    D_norm = lib.z_normalization(D)
+    # ###   - - - - -      GMM  - - - - -    ####
+    print(f'\GMM WITH K FOLD ({nr_kfold_split} folds) ')
+
+
+    ###   - - - - -  GMM GAUSSIAN NORMAL  - - - - -    ####
+    print(f'\nGMM GAUSSIAN FULL COV WITH K FOLD ({nr_kfold_split} folds) ')
+    algorithm_list = ['full_cov', 'diag_cov', 'tied_cov']
+    nr_components_list=[1, 2, 4, 8, 16]
+    for algorithm in algorithm_list: 
+        print(f'\nGMM Algorithm {algorithm}')
+        for nr_components in nr_components_list:
+            application_priors = [0.5] # XXX XXX XXX DELETE THIS
+            for prior_cl_T in application_priors:
+                min_dcf = lib.K_fold(D_norm, L, GmmClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, algorithm=algorithm, nr_clusters=nr_components)
+                print(F"min DCF GMM {algorithm} with prior=%.1f and components={nr_components}:  %.3f" %(prior_cl_T, min_dcf))
+
+
+
 if __name__ == '__main__':
     import app.libs.ml_lib as lib
     from app.core.classifiers import (
@@ -310,6 +333,7 @@ if __name__ == '__main__':
         SVMLinearClassifier,
         SVMKernelRBFClassifier,
         SVMKernelPolynomialClassifier,
+        GmmClassifier,
     )
     print('\t#\t# USING DATASET ---- ', PROVAAAAAAAAA, '\n')
 
@@ -335,7 +359,9 @@ if __name__ == '__main__':
 
     # svm_kernel_rbf(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
-    svm_kernel_polynomial(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    # svm_kernel_polynomial(D, L, application_priors, nr_kfold_split, cfp, cfn)
+
+    gmm(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
 
 
