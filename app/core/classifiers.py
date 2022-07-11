@@ -707,19 +707,19 @@ class GMMClassifierMixin:
 
             gmm = gmm_new
             
-            # ## llr should always increase
-            # if ll_new is not None and ll_old is not None:
-            #     if ll_new-ll_old < 0:
-            #         times_llr_decrease =+ 1
-            #         if ll_new-ll_old < 0 and abs(ll_new-ll_old) > 10**(-3):
-            #             print('/warning LLR should increase at each iteration')
-            #             # raise ValidationErr('LLR should increase at each iteration')
-            #         if times_llr_decrease > 3:
-            #             print('LLR decreased for 3 times')
-            #         print('old_ll', ll_old)
-            #         print('new_ll', ll_new)
+            ## llr should always increase
+            if ll_new is not None and ll_old is not None:
+                if ll_new-ll_old < 0:
+                    times_llr_decrease =+ 1
+                    if ll_new-ll_old < 0 and abs(ll_new-ll_old) > 10**(-3):
+                        print('old_ll', ll_old)
+                        print('new_ll', ll_new)
+                        print('/warning LLR should increase at each iteration')
+                        # raise ValidationErr('LLR should increase at each iteration')
+                    if times_llr_decrease > 3:
+                        print('LLR decreased for 3 times')
 
-                        # raise ValidationErr('LLR decreased for 3 times')
+                        raise ValidationErr('LLR decreased for 3 times')
         return gmm
 
     def compute_Cov_constrained(self, Cov, constraint_threshold:float=0.01):

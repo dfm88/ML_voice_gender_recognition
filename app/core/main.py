@@ -316,10 +316,9 @@ def gmm(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     for algorithm in algorithm_list: 
         print(f'\nGMM Algorithm {algorithm}')
         for nr_components in nr_components_list:
-            application_priors = [0.5] # XXX XXX XXX DELETE THIS
             for prior_cl_T in application_priors:
                 min_dcf = lib.K_fold(D_norm, L, GmmClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, algorithm=algorithm, nr_clusters=nr_components)
-                print(F"min DCF GMM {algorithm} with prior=%.1f and components={nr_components}:  %.3f" %(prior_cl_T, min_dcf))
+                print(F"min DCF GMM {algorithm} with prior=%.1f and components={nr_components}:  %.3f\n" %(prior_cl_T, min_dcf))
 
 
 
