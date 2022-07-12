@@ -17,6 +17,8 @@ class BaseClassifier(ABC):
         self.D = D
         self.L = L
 
+    name = ''
+
     @abstractmethod
     def compute_score(self, DTE, LTE=None, **classifiers_kwargs):
         """Returns scores"""
@@ -38,6 +40,7 @@ class GaussianClassifier(BaseClassifier):
     >>> classify
 
     """
+    name = 'MVG_classifier'
 
     def __init__(self, D, L, is_tied=False):
         super(GaussianClassifier, self).__init__(
@@ -189,6 +192,8 @@ class GaussianClassifier(BaseClassifier):
         return error_rate
 
 class GaussianBayesianClassifier(GaussianClassifier):
+    name = 'MVG_classifier_diagonal'
+
     def __init__(self, D, L):
         super(GaussianBayesianClassifier, self).__init__(
             D,
@@ -197,6 +202,8 @@ class GaussianBayesianClassifier(GaussianClassifier):
         self.is_bayesian = True
 
 class GaussianTiedClassifier(GaussianClassifier):
+    name = 'MVG_classifier_tied'
+
     def __init__(self, D, L):
         super(GaussianTiedClassifier, self).__init__(
             D,
@@ -205,6 +212,7 @@ class GaussianTiedClassifier(GaussianClassifier):
         )
 
 class LogisticRegressionClassifier(BaseClassifier):
+    name = 'Linear_Log_Reg_classifier'
 
     def __init__(self, D, L):
         super().__init__(
@@ -285,6 +293,7 @@ class LogisticRegressionClassifier(BaseClassifier):
         raise NotImplementedError
 
 class SVMLinearClassifier(BaseClassifier):
+    name = 'Linear_SVM_classifier'
 
     def __init__(self, D, L):
         super().__init__(
@@ -387,7 +396,7 @@ class SVMLinearClassifier(BaseClassifier):
         j_primal_test, S_test, loss_test = JPrimal(wStar, DTE_expanded, C, Z_L=Z_LTE)
         return j_primal_test, S_test, loss_test
 
-    def compute_score(self, DTE, LTE=None, C=0.1, K=1, rebalanced:bool=False, pi_T=0.5):
+    def compute_score(self, DTE, LTE=None, C=1, K=1, rebalanced:bool=False, pi_T=0.5):
         """Returns scores"""
         self.C = C
         self.K = K
@@ -412,8 +421,8 @@ class SVMLinearClassifier(BaseClassifier):
     def classify(self, LTE):
         raise NotImplementedError
 
-
 class SVMKernelRBFClassifier(SVMLinearClassifier):
+    name = 'Kernel_RBF_SVM_classifier'
 
     def __init__(self, D, L):
         super(SVMKernelRBFClassifier, self).__init__(
@@ -482,9 +491,8 @@ class SVMKernelRBFClassifier(SVMLinearClassifier):
         self.scores = scores.ravel() # XXX need to ravel
         return self.scores
 
-
-
 class SVMKernelPolynomialClassifier(SVMLinearClassifier):
+    name = 'Kernel_Poly_SVM_classifier'
 
     def __init__(self, D, L):
         super(SVMKernelPolynomialClassifier, self).__init__(
@@ -556,7 +564,6 @@ class SVMKernelPolynomialClassifier(SVMLinearClassifier):
         )
         self.scores = scores.ravel() # XXX need to ravel
         return self.scores
-
 
 class GMMClassifierMixin:
     def GMM_scores_per_sample(self, X, gmm):
@@ -934,14 +941,13 @@ class GmmClassifier(BaseClassifier, GMMClassifierMixin):
     >>> classify
 
     """
+    name = 'GMM_classifier'
     def __init__(self, D, L):
         super().__init__(
             D,
             L
         )
         self.scores = None
-
-
 
     def compute_score(
         self, 

@@ -633,9 +633,10 @@ def K_fold(
     cfn=1, 
     seed=0, 
     actual_dcf=False, 
+    plot_bayes_error=False,
     model_name_error_plot='',
     **classifier_kwargs
-) -> Tuple[float, Optional[float]]:
+) -> Tuple[float, Optional[float], BaseClassifier]:
     """Returns a tuple with (min DCF, act DCF) on the base split/ priors and costs
     the actual DCF is returned only if :actual_dcf is True, in this case will also plot
     the Bayesian error graph
@@ -656,8 +657,8 @@ def K_fold(
         actual_dcf (bool, optional): if True returns also the actual dcf and plot the baesyan error graph
 
     Returns:
-        tuple: (float  , Optional(float))
-               (min_dcf, act_dcf)
+        tuple: (float  , Optional(float), BaseClassifier)
+               (min_dcf, act_dcf, BaseClassifier)
     """
     
     
@@ -716,6 +717,7 @@ def K_fold(
     tot_scores = np.hstack(tot_scores)
     tot_LVA = np.hstack(tot_LVA)
     classifier.scores = tot_scores
+    classifier.L = tot_LVA
     # classifier.train(classes_prior) 
 
     min_dcf = compute_min_DCF(
@@ -734,8 +736,9 @@ def K_fold(
             Cfn=cfn,
             Cfp=cfp
         )
-        bayes_error_plot(classifier.scores, tot_LVA, model_name=model_name_error_plot)
-    return min_dcf, act_dcf
+        if plot_bayes_error:
+            bayes_error_plot(classifier.scores, tot_LVA, model_name=model_name_error_plot)
+    return min_dcf, act_dcf, classifier
 
 # Dual SVM computation
 class Dual:
@@ -853,18 +856,23 @@ def bayes_error(pArray, scores, labels, minCost=False):
             y.append(compute_act_DCF(scores, labels, pi, 1, 1))
     return np.array(y)
 
-def bayes_error_plot(scores, labels, model_name=''):
+def bayes_error_plot(scores, labels, model_name='', scores_rebalanced=None, labels_rebalanced=None):
     """
     computes the Theoretical and Ideal Bayes errors and plot them
     """
+    legend_list = ["act DCF", "min DCF"]
     plt.figure()
     p = np.linspace(-3, 3, 21)
     plt.plot(p, bayes_error(p, scores, labels, minCost=False), color='r')
     plt.plot(p, bayes_error(p, scores, labels, minCost=True), color='b')
+    if scores_rebalanced is not None and labels_rebalanced is not None:
+        legend_list = [*legend_list, 'act DCF reblanced']
+        plt.plot(p, bayes_error(p, scores_rebalanced, labels_rebalanced, minCost=False), color='r', linestyle='dashed')
+
     plt.xlabel(r'$\log \dfrac{\widetilde{ \pi }}{1-\widetilde{ \pi }}$')
     plt.ylabel('DCF')
     plt.title(f"{model_name}")
-    plt.legend(["actual DCF", "min DCF"])
+    plt.legend(legend_list)
     plt.savefig(f'plots/BAYES_ERROR/{model_name}.jpg', bbox_inches="tight")
 
 ################################################
