@@ -662,31 +662,10 @@ def K_fold(
     """
     
     
-    # typing for testing
-    classes_prior = [prior_cl_T, 1-prior_cl_T]
-
     tot_scores = []
     tot_LVA = []
     
     for (DTR, LTR, DVA, LVA) in (spilt_K_fold(D, L, k, seed)):
-        ''' SAVE TO FILE
-            # with open(f'my_ksplit_test/DTR_voice_{i}.txt', 'x') as f:
-            #     np.save(f, DTR)
-            # with open(f'my_ksplit_test/LTR_voice_{i}.txt', 'x') as f:
-            #     np.save(f, LTR)
-            # with open(f'my_ksplit_test/DVA_voice_{i}.txt', 'x') as f:
-            #     np.save(f, DVA)
-            # with open(f'my_ksplit_test/LVA_voice_{i}.txt', 'x') as f:
-            #     np.save(f, LVA)
-            file_DTR_pulsar = f'my_ksplit_test/DTR_pulsar_{i+1}_totSplit_{k}.txt'
-            file_LTR_pulsar = f'my_ksplit_test/LTR_pulsar_{i+1}_totSplit_{k}.txt'
-            file_DVA_pulsar = f'my_ksplit_test/DVA_pulsar_{i+1}_totSplit_{k}.txt'
-            file_LVA_pulsar = f'my_ksplit_test/LVA_pulsar_{i+1}_totSplit_{k}.txt'
-            np.save(file_DTR_pulsar, DTR)
-            np.save(file_LTR_pulsar, LTR)
-            np.save(file_DVA_pulsar, DVA)
-            np.save(file_LVA_pulsar, LVA)
-        '''
         if z_norm:
             # print('applying z norm')
             DTR, DVA = z_normalization(DTR, DVA)

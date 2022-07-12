@@ -447,6 +447,108 @@ def score_calibration(D, L, classifier:'BaseClassifier', nr_kfold_split, cfp, cf
     
 
 
+def evaluation(DTR, LTR, cfp, cfn):
+    print('********  STARTING EVALUATION ***********\n')
+
+    DTE, LTE = lib.load_binary_data(TEST_DATA_FILE, NR_FEATURES)
+
+    
+    # APPLYING Z-NORMALIZATION
+    DTR, DTE = lib.z_normalization(DTR, DTE)
+
+    for prior_cl_T in application_priors:
+        print(f'\n------------------------------- PRIOR {prior_cl_T}')
+
+        ### GMM TIED (4) CLASSIFIER
+        nr_clusters = 4
+        algorithm = 'tied_cov'
+        gmm = GmmClassifier(DTR, LTR)
+        gmm.compute_score(DTE, LTE, nr_clusters=nr_clusters, algorithm=algorithm)
+
+        min_dcf = lib.compute_min_DCF(
+            scores=gmm.scores,
+            labels=LTE,
+            prior_cl1=prior_cl_T,
+            Cfn=cfn,
+            Cfp=cfp
+        )
+
+        act_dcf = lib.compute_act_DCF(
+            scores=gmm.scores,
+            labels=LTE,
+            prior_cl1=prior_cl_T,
+            Cfn=cfn,
+            Cfp=cfp
+        )
+        print(f'EVALUATION: GMM TIED (4) prior {prior_cl_T}, nr_comp. {nr_clusters}, min DCF {min_dcf}, act DCF {act_dcf}\n')
+
+        for pi_T in application_priors:
+            print(f'pi_TR {pi_T}')
+
+            ### LOG REG CLASSIFIER
+            _lambda = 0
+            lr = LogisticRegressionClassifier(DTR, LTR)
+            lr.compute_score(DTE, LTE, _lambda=_lambda, regularized=True, pi_T=pi_T)
+
+            min_dcf = lib.compute_min_DCF(
+                scores=lr.scores,
+                labels=LTE,
+                prior_cl1=prior_cl_T,
+                Cfn=cfn,
+                Cfp=cfp
+            )
+
+            act_dcf = lib.compute_act_DCF(
+                scores=lr.scores,
+                labels=LTE,
+                prior_cl1=prior_cl_T,
+                Cfn=cfn,
+                Cfp=cfp
+            )
+            print(f'EVALUATION: LOGISTIC REGRESSION prior {prior_cl_T}, pi_T {pi_T}, lambda {_lambda} min DCF {min_dcf}, act DCF {act_dcf}\n')
+
+
+            ### LINEAR SVM CLASSIFIER
+            C = 1
+            lsvm = SVMLinearClassifier(DTR, LTR)
+            lsvm.compute_score(DTE, LTE, C=C, rebalanced=True, pi_T=pi_T)
+
+            min_dcf = lib.compute_min_DCF(
+                scores=lsvm.scores,
+                labels=LTE,
+                prior_cl1=prior_cl_T,
+                Cfn=cfn,
+                Cfp=cfp
+            )
+
+            act_dcf = lib.compute_act_DCF(
+                scores=lsvm.scores,
+                labels=LTE,
+                prior_cl1=prior_cl_T,
+                Cfn=cfn,
+                Cfp=cfp
+            )
+            print(f'EVALUATION: LINEAR SVM prior {prior_cl_T}, pi_T {pi_T}, C {C}, min DCF {min_dcf}, act DCF {act_dcf}\n')
+            # recalibrate linear SVM
+            min_dcf_reb, act_dcf_reb, klass_reb = lib.K_fold(
+                D=lib.rowv(lsvm.scores), 
+                L=LTE, 
+                classifier_class=LogisticRegressionClassifier, 
+                actual_dcf=True, 
+                z_norm=True, 
+                gaus=False, 
+                pca_m=None, 
+                k=nr_kfold_split, 
+                prior_cl_T=prior_cl_T, 
+                cfp=cfp, 
+                cfn=cfn,
+                _lambda=0, 
+                regularized=True, 
+                pi_T=pi_T,
+            )
+            print(f'EVALUATION: LINEAR SVM (CALIBRATED) prior {prior_cl_T}, pi_T {pi_T}, C {C}, min DCF {min_dcf_reb}, act DCF {act_dcf_reb}\n')
+
+
 
 
 if __name__ == '__main__':
@@ -495,13 +597,15 @@ if __name__ == '__main__':
 
 
     # score_calibrate_SVM = partial(score_calibration, classifier=SVMLinearClassifier)
-    # score_calibrate_SVM(D, L, nr_kfold_split, cfp, cfn, model_name='LINEAR_SVM_C_1')
+    # score_calibrate_SVM(D=D, L=L, nr_kfold_split=nr_kfold_split, cfp=cfp, cfn=cfn, model_name='LINEAR_SVM_C_1')
     
-    score_calibrate_GMM = partial(score_calibration, classifier=GmmClassifier)
-    score_calibrate_GMM(D=D, L=L, nr_kfold_split=nr_kfold_split, cfp=cfp, cfn=cfn, model_name='GMM_tied_cov_4_comp', algorithm='tied_cov', nr_clusters=4)
+    # score_calibrate_GMM = partial(score_calibration, classifier=GmmClassifier)
+    # score_calibrate_GMM(D=D, L=L, nr_kfold_split=nr_kfold_split, cfp=cfp, cfn=cfn, model_name='GMM_tied_cov_4_comp', algorithm='tied_cov', nr_clusters=4)
 
-    score_calibrate_LOGREG = partial(score_calibration, classifier=LogisticRegressionClassifier)
-    score_calibrate_LOGREG(D=D, L=L, nr_kfold_split=nr_kfold_split, cfp=cfp, cfn=cfn, model_name='LINEAR_LOG_REG_lambda_0', _lambda=0)
+    # score_calibrate_LOGREG = partial(score_calibration, classifier=LogisticRegressionClassifier)
+    # score_calibrate_LOGREG(D=D, L=L, nr_kfold_split=nr_kfold_split, cfp=cfp, cfn=cfn, model_name='LINEAR_LOG_REG_lambda_0', _lambda=0)
+
+    evaluation(DTR=D, LTR=L, cfp=cfp, cfn=cfn)
 
 
 
