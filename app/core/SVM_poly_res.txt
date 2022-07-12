@@ -1,0 +1,66 @@
+        #       # USING DATASET ----  voice 
+
+\SVM KERNEL POLYNOMIAL DEGREE 2 WITH K FOLD (4 folds) 
+
+----- Prior 0.9 --- pi_T 0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.5
+min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C=1 and _c=10:  0.140
+
+----- Prior 0.9 --- pi_T 0.9
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.9
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.9
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.9
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.9
+min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C=1 and _c=10:  0.145
+
+----- Prior 0.9 --- pi_T 0.1
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.1
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.1
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.1
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.1
+min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C=1 and _c=10:  0.149
+
+----- Prior 0.1 --- pi_T 0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.5
+min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C=1 and _c=10:  0.144
+
+----- Prior 0.1 --- pi_T 0.9
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.9
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.9
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.9
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.9
+min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C=1 and _c=10:  0.146
+
+----- Prior 0.1 --- pi_T 0.1
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.1
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.1
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.1
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? True, pi_T=0.1
+min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C=1 and _c=10:  0.142
+
+----- Prior 0.5 --- not regularized
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C=1 and _c=10:  0.054
+
+----- Prior 0.9 --- not regularized
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C=1 and _c=10:  0.140
+
+----- Prior 0.1 --- not regularized
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+Training SVM polynomial with C=1, K=1, _c=10, polynomial degree=2, rebalanced ? False, pi_T=0.5
+min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C=1 and _c=10:  0.146

@@ -1,7 +1,7 @@
 import sys
 sys.path.append('.')
 from ast import Yield
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 import numpy as np
 import scipy as sp
 import csv
@@ -600,8 +600,23 @@ def spilt_K_fold(D, L, k:int, seed=0) -> Yield(Tuple):
 
 
 
-def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, cfp=1, cfn=1, seed=0, **classifier_kwargs) -> float:
-    """Returns the min DCF on the base split/ priors and costs
+def K_fold(
+    D, 
+    L, 
+    classifier_class: BaseClassifier, 
+    k:int, 
+    prior_cl_T:float=0.5, 
+    cfp=1, 
+    cfn=1, 
+    seed=0, 
+    actual_dcf=False, 
+    model_name_error_plot='',
+    **classifier_kwargs
+) -> Tuple[float, Optional[float]]:
+    """Returns a tuple with (min DCF, act DCF) on the base split/ priors and costs
+    the actual DCF is returned only if :actual_dcf is True, in this case will also plot
+    the Bayesian error graph
+       
 
     Args:
         D (np.array): Whole Data
@@ -612,9 +627,11 @@ def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, 
         cfp (int, optional): Cost for False Positive. Defaults to 1.
         cfn (int, optional): Cost for False Negative. Defaults to 1.
         seed (int, optional): to randomize the shuffle phase of k-fold. Defaults to 0.
+        actual_dcf (bool, optional): if True returns also the actual dcf and plot the baesyan error graph
 
     Returns:
-        float: min dcf
+        tuple: (float  , Optional(float))
+               (min_dcf, act_dcf)
     """
     
     
@@ -674,7 +691,17 @@ def K_fold(D, L, classifier_class: BaseClassifier, k:int, prior_cl_T:float=0.5, 
         Cfn=cfn,
         Cfp=cfp
     )
-    return min_dcf
+    act_dcf = None
+    if actual_dcf:
+        act_dcf = compute_act_DCF(
+            scores=classifier.scores,
+            labels=tot_LVA,
+            prior_cl1=prior_cl_T,
+            Cfn=cfn,
+            Cfp=cfp
+        )
+        bayes_error_plot(classifier.scores, tot_LVA, model_name=model_name_error_plot)
+    return min_dcf, act_dcf
 
 # Dual SVM computation
 class Dual:
@@ -781,6 +808,30 @@ def compute_min_DCF(scores, labels, prior_cl1, Cfn, Cfp):
     for _th in thresholds:
         dcfList.append(compute_act_DCF(scores, labels, prior_cl1, Cfn, Cfp, th = _th))
     return np.array(dcfList).min()
+
+def bayes_error(pArray, scores, labels, minCost=False):
+    y = []
+    for p in pArray:
+        pi = 1.0 / (1.0 + np.exp(-p))
+        if minCost:
+            y.append(compute_min_DCF(scores, labels, pi, 1, 1))
+        else:
+            y.append(compute_act_DCF(scores, labels, pi, 1, 1))
+    return np.array(y)
+
+def bayes_error_plot(scores, labels, model_name=''):
+    """
+    computes the Theoretical and Ideal Bayes errors and plot them
+    """
+    plt.figure()
+    p = np.linspace(-3, 3, 21)
+    plt.plot(p, bayes_error(p, scores, labels, minCost=False), color='r')
+    plt.plot(p, bayes_error(p, scores, labels, minCost=True), color='b')
+    plt.xlabel(r'$\log \dfrac{\widetilde{ \pi }}{1-\widetilde{ \pi }}$')
+    plt.ylabel('DCF')
+    plt.title(f"{model_name}")
+    plt.legend(["actual DCF", "min DCF"])
+    plt.savefig(f'plots/BAYES_ERROR/{model_name}.jpg', bbox_inches="tight")
 
 ################################################
 #############   DCF END    ###################################################

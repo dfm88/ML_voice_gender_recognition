@@ -342,7 +342,7 @@ class SVMLinearClassifier(BaseClassifier):
             bounds = bounds,
             factr = 0,
             maxiter = 10_000,
-            maxfun = 10_000,
+            maxfun = 100_000,
             # iprint=1
         )
 

@@ -1,0 +1,46 @@
+        #       # USING DATASET ----  voice 
+
+
+------------------ PRIOR 0.5
+GMM computing scores with type=tied_cov, nr_cluster=4
+GMM computing scores with type=tied_cov, nr_cluster=4
+GMM computing scores with type=tied_cov, nr_cluster=4
+GMM computing scores with type=tied_cov, nr_cluster=4
+min DCF GMM tied_cov with prior=0.5 and components=4:  0.030
+act DCF GMM tied_cov with prior=0.5 and components=4:  0.031
+
+min DCF LOGISTIC REGRESSION REG by 0.5 with prior=0.5 and lambda=0:  0.048
+act DCF LOGISTIC REGRESSION REG by 0.5 with prior=0.5 and lambda=0:  0.048
+
+min DCF LINEAR SVM with prior=0.5 and C=1:  0.045
+act DCF LINEAR SVM with prior=0.5 and C=1:  0.046
+
+
+------------------ PRIOR 0.1
+GMM computing scores with type=tied_cov, nr_cluster=4
+GMM computing scores with type=tied_cov, nr_cluster=4
+GMM computing scores with type=tied_cov, nr_cluster=4
+GMM computing scores with type=tied_cov, nr_cluster=4
+min DCF GMM tied_cov with prior=0.1 and components=4:  0.092
+act DCF GMM tied_cov with prior=0.1 and components=4:  0.098
+
+min DCF LOGISTIC REGRESSION REG by 0.5 with prior=0.1 and lambda=0:  0.132
+act DCF LOGISTIC REGRESSION REG by 0.5 with prior=0.1 and lambda=0:  0.137
+
+min DCF LINEAR SVM with prior=0.1 and C=1:  0.130
+act DCF LINEAR SVM with prior=0.1 and C=1:  0.269
+
+
+------------------ PRIOR 0.9
+GMM computing scores with type=tied_cov, nr_cluster=4
+GMM computing scores with type=tied_cov, nr_cluster=4
+GMM computing scores with type=tied_cov, nr_cluster=4
+GMM computing scores with type=tied_cov, nr_cluster=4
+min DCF GMM tied_cov with prior=0.9 and components=4:  0.076
+act DCF GMM tied_cov with prior=0.9 and components=4:  0.084
+
+min DCF LOGISTIC REGRESSION REG by 0.5 with prior=0.9 and lambda=0:  0.121
+act DCF LOGISTIC REGRESSION REG by 0.5 with prior=0.9 and lambda=0:  0.133
+
+min DCF LINEAR SVM with prior=0.9 and C=1:  0.124
+act DCF LINEAR SVM with prior=0.9 and C=1:  0.281

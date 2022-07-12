@@ -44,16 +44,16 @@ def gaussian(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
         ###   - - - - -      GAUSSIAN NORMAL  - - - - -    ####
         print(f'\nGAUSSIAN FULL COV WITH K FOLD ({nr_kfold_split} folds) ')
         for prior_cl_T in application_priors:
-            min_dcf = lib.K_fold(D_pca, L, GaussianClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
-            min_dcf_gau = lib.K_fold(D_pca_gau, L, GaussianClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
+            min_dcf, _ = lib.K_fold(D_pca, L, GaussianClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
+            min_dcf_gau, _ = lib.K_fold(D_pca_gau, L, GaussianClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
             print("min DCF MVG Full-Cov with prior=%.1f:  %.3f" %(prior_cl_T, min_dcf))
             print("min DCF MVG `gaussianized` Full-Cov with prior=%.1f:  %.3f\n" %(prior_cl_T, min_dcf_gau))
 
         ###   - - - - -      GAUSSIAN BAYES  - - - - -    ####
         print(f'\nGAUSSIAN DIAGONAL COV WITH K FOLD ({nr_kfold_split} folds) ')
         for prior_cl_T in application_priors:
-            min_dcf = lib.K_fold(D_pca, L, GaussianBayesianClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
-            min_dcf_gau = lib.K_fold(D_pca_gau, L, GaussianBayesianClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
+            min_dcf, _ = lib.K_fold(D_pca, L, GaussianBayesianClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
+            min_dcf_gau, _ = lib.K_fold(D_pca_gau, L, GaussianBayesianClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
             print("min DCF MVG Diagonal-Cov with prior=%.1f:  %.3f" %(prior_cl_T, min_dcf))
             print("min DCF MVG `gaussianized` Diagonal-Cov with prior=%.1f:  %.3f\n" %(prior_cl_T, min_dcf_gau))
 
@@ -61,8 +61,8 @@ def gaussian(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
         ###   - - - - -      GAUSSIAN TIED  - - - - -    ####
         print(f'\nGAUSSIAN TIED COV WITH K FOLD ({nr_kfold_split} folds) ')
         for prior_cl_T in application_priors:
-            min_dcf = lib.K_fold(D_pca, L, GaussianTiedClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
-            min_dcf_gau = lib.K_fold(D_pca_gau, L, GaussianTiedClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
+            min_dcf, _ = lib.K_fold(D_pca, L, GaussianTiedClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
+            min_dcf_gau, _ = lib.K_fold(D_pca_gau, L, GaussianTiedClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn)
         
             print("min DCF MVG Tied-Cov with prior=%.1f:  %.3f" %(prior_cl_T, min_dcf))
             print("min DCF MVG `gaussianized` Tied-Cov with prior=%.1f:  %.3f\n" %(prior_cl_T, min_dcf_gau))
@@ -88,9 +88,9 @@ def linear_logistic_regression(D, L, application_priors:list, nr_kfold_split, cf
         min_DCF_z_regul_list = []
         min_DCF_gau_regul_list = []
         for _l in _lambdas:
-            min_dcfF_z_not_regul = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_l, regularized=regularized, pi_T=pi_T)
+            min_dcfF_z_not_regul, _ = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_l, regularized=regularized, pi_T=pi_T)
             min_DCF_z_regul_list.append(min_dcfF_z_not_regul)
-            min_dcf_gau_not_regul = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_l, regularized=regularized, pi_T=pi_T)
+            min_dcf_gau_not_regul, _ = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_l, regularized=regularized, pi_T=pi_T)
             min_DCF_gau_regul_list.append(min_dcf_gau_not_regul)
             print(f"min DCF LOGISTIC REGRESSION 'z' REG by {pi_T} with prior={prior_cl_T} and lambda={_l}:  {min_dcfF_z_not_regul:.3f}")
             print(f"min DCF LOGISTIC REGRESSION 'Gaussianized' REG by {pi_T} with prior={prior_cl_T} and lambda={_l}:  {min_dcf_gau_not_regul:.3f}")
@@ -98,40 +98,40 @@ def linear_logistic_regression(D, L, application_priors:list, nr_kfold_split, cf
 
 
     ### Estimating for different values of lambda
-    # tot_z_reg = []
-    # tot_gau_reg=[]
-    # pi_T=0.5
-    # regularized=True
-    # for prior in application_priors:
-    #     print(f'\n -- ------  APPLICATION PRIOR {prior}')
-    #     min_DCF_z_regul_list, min_DCF_gau_regul_list = lambda_tuning(prior, _lambdas, regularized=regularized, pi_T=pi_T)
-    #     tot_z_reg = tot_z_reg + min_DCF_z_regul_list
-    #     tot_gau_reg = tot_gau_reg + min_DCF_gau_regul_list
-    # print('\n\nmin DCF for Z')
-    # print(min(tot_z_reg))
-    # print('\n\nmin DCF for gau')
-    # print(min(tot_gau_reg))
-    # lib.plot_dcf(_lambdas, tot_z_reg, 'lambda', 'LR_z_regularized', regularized=regularized, pi_T=pi_T)
-    # lib.plot_dcf(_lambdas, tot_gau_reg, 'lambda', 'LR_gau_regularized', regularized=regularized, pi_T=pi_T)
+    tot_z_reg = []
+    tot_gau_reg=[]
+    pi_T=0.5
+    regularized=True
+    for prior in application_priors:
+        print(f'\n -- ------  APPLICATION PRIOR {prior}')
+        min_DCF_z_regul_list, min_DCF_gau_regul_list = lambda_tuning(prior, _lambdas, regularized=regularized, pi_T=pi_T)
+        tot_z_reg = tot_z_reg + min_DCF_z_regul_list
+        tot_gau_reg = tot_gau_reg + min_DCF_gau_regul_list
+    print('\n\nmin DCF for Z')
+    print(min(tot_z_reg))
+    print('\n\nmin DCF for gau')
+    print(min(tot_gau_reg))
+    lib.plot_dcf(_lambdas, tot_z_reg, 'lambda', 'LR_z_regularized', regularized=regularized, pi_T=pi_T)
+    lib.plot_dcf(_lambdas, tot_gau_reg, 'lambda', 'LR_gau_regularized', regularized=regularized, pi_T=pi_T)
 
 
     # using lambda = 0 from previous result, we'll try, for each application prior
     # different empirical priors
     _lambda = 0
     ## REGULARIZED
-    # for prior_cl_T in application_priors:
-    #     for pi_T in application_priors:
-    #         print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
-    #         min_dcf_z = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=True, pi_T=pi_T)
-    #         min_dcf_gau = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=True, pi_T=pi_T)
-    #         print(f"min DCFLOGISTIC REGRESSION 'z' and lambda={_lambda}:  {min_dcf_z:.3f}")
-    #         print(f"min DCFLOGISTIC REGRESSION 'Gaussian' and lambda={_lambda}:  {min_dcf_gau:.3f}")
+    for prior_cl_T in application_priors:
+        for pi_T in application_priors:
+            print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
+            min_dcf_z, _ = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=True, pi_T=pi_T)
+            min_dcf_gau, _ = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=True, pi_T=pi_T)
+            print(f"min DCFLOGISTIC REGRESSION 'z' and lambda={_lambda}:  {min_dcf_z:.3f}")
+            print(f"min DCFLOGISTIC REGRESSION 'Gaussian' and lambda={_lambda}:  {min_dcf_gau:.3f}")
  
     ## NOT REGULARIZED
     for prior_cl_T in application_priors:
         print(f'\n----- Prior {prior_cl_T} --- not regularized')
-        min_dcf_z = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=False)
-        min_dcf_gau = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=False)
+        min_dcf_z, _ = lib.K_fold(D_norm, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=False)
+        min_dcf_gau, _ = lib.K_fold(D_norm_gau, L, LogisticRegressionClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, _lambda=_lambda, regularized=False)
         print(f"min DCFLOGISTIC REGRESSION 'z' and lambda={_lambda}:  {min_dcf_z:.3f}")
         print(f"min DCFLOGISTIC REGRESSION 'Gaussian' and lambda={_lambda}:  {min_dcf_gau:.3f}")
 
@@ -140,7 +140,6 @@ def svm_linear(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     SVM LINEAR TRAINING
     """
     D_norm = lib.z_normalization(D)
-    D_norm_gau = lib.gaussianization(D_norm, D_norm)
     # ###   - - - - -      SVM LINEAR  - - - - -    ####
     print(f'\SVM LINEAR WITH K FOLD ({nr_kfold_split} folds) ')
     C_list = np.logspace(-3, 1, num=20) 
@@ -153,35 +152,35 @@ def svm_linear(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
         """
         min_DCF_z_list = []
         for c in C_list:
-            min_dcfF_z = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c)
+            min_dcfF_z, _ = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c)
             min_DCF_z_list.append(min_dcfF_z)
             print(f"min DCF SVM Linear 'z' with C:{c} and prior {prior_cl_T}:  {min_dcfF_z}")
         return min_DCF_z_list
 
     # ## Estimating for different values of C
-    # tot_z_reg = []
-    # for prior in application_priors:
-    #     print(f'\n -- ------  APPLICATION PRIOR {prior}')
-    #     min_DCF_z_regul_list = C_tuning(prior_cl_T=prior)
-    #     tot_z_reg = tot_z_reg + min_DCF_z_regul_list
-    # print('\n\nmin DCF for Z')
-    # print(min(tot_z_reg))
-    # lib.plot_dcf(C_list, tot_z_reg, 'C', 'SVM_linear_z')
+    tot_z_reg = []
+    for prior in application_priors:
+        print(f'\n -- ------  APPLICATION PRIOR {prior}')
+        min_DCF_z_regul_list = C_tuning(prior_cl_T=prior)
+        tot_z_reg = tot_z_reg + min_DCF_z_regul_list
+    print('\n\nmin DCF for Z')
+    print(min(tot_z_reg))
+    lib.plot_dcf(C_list, tot_z_reg, 'C', 'SVM_linear_z')
 
     # using C = 1 from previous result, we'll try, for each application prior
     # different empirical priors
     C = 1
     ## REGULARIZED
-    # for prior_cl_T in application_priors:
-    #     for pi_T in application_priors:
-    #         print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
-    #         min_dcf_z = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=True, pi_T=pi_T)
-    #         print(f"min DCF LINEAR CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
+    for prior_cl_T in application_priors:
+        for pi_T in application_priors:
+            print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
+            min_dcf_z, _ = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=True, pi_T=pi_T)
+            print(f"min DCF LINEAR CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
 
     ## NOT REGULARIZED
     for prior_cl_T in application_priors:
         print(f'\n----- Prior {prior_cl_T} --- not regularized')
-        min_dcf_z = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=False)
+        min_dcf_z, _ = lib.K_fold(D_norm, L, SVMLinearClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=False)
         print(f"min DCF LINEAR CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
 
 
@@ -196,7 +195,6 @@ def svm_kernel_rbf(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     gamma_list = [10**(-2), 10**(-1), 10**(0)]
     PRIOR = 0.5 # since we have 2 hyperparameters (C and gamma) we'll only consider our main application prior
 
-
     def C_gamma_tuning(prior_cl_T):
         """
         returns 1 list 
@@ -206,7 +204,7 @@ def svm_kernel_rbf(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
         min_DCF_z_list = []
         for gamma in gamma_list:
             for c in C_list:
-                min_dcfF_z = lib.K_fold(D_norm, L, SVMKernelRBFClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c, gamma=gamma)
+                min_dcfF_z, _ = lib.K_fold(D_norm, L, SVMKernelRBFClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c, gamma=gamma)
                 min_DCF_z_list.append(min_dcfF_z)
                 print(f"min DCF SVM  KERNEL RBF 'z' with C:{c} and gamma:{gamma} and prior {prior_cl_T}:  {min_dcfF_z}")
         return min_DCF_z_list
@@ -233,13 +231,13 @@ def svm_kernel_rbf(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
     # for prior_cl_T in application_priors:
     #     for pi_T in application_priors:
     #         print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
-    #         min_dcf_z = lib.K_fold(D_norm, L, SVMKernelRBFClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=True, pi_T=pi_T)
+    #         min_dcf_z, _ = lib.K_fold(D_norm, L, SVMKernelRBFClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=True, pi_T=pi_T)
     #         print(f"min DCF  KERNEL RBF CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
 
     ## NOT REGULARIZED
     # for prior_cl_T in application_priors:
     #     print(f'\n----- Prior {prior_cl_T} --- not regularized')
-    #     min_dcf_z = lib.K_fold(D_norm, L, SVMKernelRBFClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=False)
+    #     min_dcf_z, _ = lib.K_fold(D_norm, L, SVMKernelRBFClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, rebalanced=False)
     #     print(f"min DCF  KERNEL RBF CLASSIFIER 'z' and C={C}:  {min_dcf_z:.3f}")
 
 
@@ -263,7 +261,7 @@ def svm_kernel_polynomial(D, L, application_priors:list, nr_kfold_split, cfp, cf
         min_DCF_z_list = []
         for _c in _c_list:  
             for c in C_list:
-                min_dcfF_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c, _c=_c)
+                min_dcfF_z, _ = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=c, _c=_c)
                 min_DCF_z_list.append(min_dcfF_z)
                 print(f"min DCF SVM KERNEL POLYNOMIAL DEGREE 2 'z' with C:{c} and _c:{_c} and prior {prior_cl_T}:  {min_dcfF_z}")
         return min_DCF_z_list
@@ -282,7 +280,7 @@ def svm_kernel_polynomial(D, L, application_priors:list, nr_kfold_split, cfp, cf
     #     hyperpar_list=_c_list
     # )
 
-    # using C = ? and _c = ? from previous result, we'll try, for each application prior
+    # using C = 1 and _c = 10 from previous result, we'll try, for each application prior
     # different empirical priors
     C = 1
     _c = 10
@@ -290,13 +288,13 @@ def svm_kernel_polynomial(D, L, application_priors:list, nr_kfold_split, cfp, cf
     for prior_cl_T in application_priors:
         for pi_T in application_priors:
             print(f'\n----- Prior {prior_cl_T} --- pi_T {pi_T}')
-            min_dcf_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, _c=_c, rebalanced=True, pi_T=pi_T)
+            min_dcf_z, _ = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, _c=_c, rebalanced=True, pi_T=pi_T)
             print(f"min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C={C} and _c={_c}:  {min_dcf_z:.3f}")
 
     ## NOT REGULARIZED
     for prior_cl_T in application_priors:
         print(f'\n----- Prior {prior_cl_T} --- not regularized')
-        min_dcf_z = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, _c=_c, rebalanced=False)
+        min_dcf_z, _ = lib.K_fold(D_norm, L, SVMKernelPolynomialClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, C=C, _c=_c, rebalanced=False)
         print(f"min DCF KERNEL POLYNOMIAL DEGREE 2 CLASSIFIER 'z' and C={C} and _c={_c}:  {min_dcf_z:.3f}")
 
 
@@ -319,12 +317,80 @@ def gmm(D, L, application_priors:list, nr_kfold_split, cfp, cfn):
         for prior_cl_T in application_priors:
             priors_res[str(prior_cl_T)] = []
             for nr_components in nr_components_list:
-                min_dcf = lib.K_fold(D_norm, L, GmmClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, algorithm=algorithm, nr_clusters=nr_components)
+                min_dcf, _ = lib.K_fold(D_norm, L, GmmClassifier, k=nr_kfold_split, prior_cl_T=prior_cl_T, cfp=cfp, cfn=cfn, algorithm=algorithm, nr_clusters=nr_components)
                 priors_res[str(prior_cl_T)].append(min_dcf)
                 print(F"min DCF GMM {algorithm} with prior=%.1f and components={nr_components}:  %.3f\n" %(prior_cl_T, min_dcf))
         lib.plot_dcf_gmm(prior1_res=priors_res['0.5'], prior2_res=priors_res['0.9'], prior3_res=priors_res['0.1'], components=nr_components_list, model_name=f'{algorithm}')
 
 
+def actual_dcf(D, L, application_priors, nr_kfold_split, cfp, cfn):
+    """
+    ACTUAL DCF FOR BEST CLASSIFIERS
+        - GMM Tied 4 components
+        - Linear Logistic Regression
+        - Linear SVM
+    """
+    D_norm = lib.z_normalization(D)
+    PI_T = 0.5
+
+    for PRIOR in application_priors:
+        print(f'\n------------------ PRIOR {PRIOR}')
+        ## GMM (4 comp) Gaussian Tied
+        nr_components = 4
+        algorithm = 'tied_cov'
+        min_dcf_gmm, act_dcf_gmm = lib.K_fold(
+            D_norm, 
+            L, 
+            GmmClassifier, 
+            k=nr_kfold_split, 
+            prior_cl_T=PRIOR, 
+            cfp=cfp, 
+            cfn=cfn, 
+            algorithm=algorithm, 
+            nr_clusters=nr_components,
+            actual_dcf=True,
+            model_name_error_plot=f'GMM_{algorithm}_{nr_components}_comp',
+        )
+        print(F"min DCF GMM {algorithm} with prior={PRIOR:.1f} and components={nr_components}:  {min_dcf_gmm:.3f}")
+        print(F"act DCF GMM {algorithm} with prior={PRIOR:.1f} and components={nr_components}:  {act_dcf_gmm:.3f}\n")
+
+        ## Linear Logistic Regression
+        _l = 0 # lambda
+        min_dcf_logreg, act_dcf_logreg = lib.K_fold(
+            D_norm, 
+            L, 
+            LogisticRegressionClassifier, 
+            k=nr_kfold_split, 
+            prior_cl_T=PRIOR, 
+            cfp=cfp, 
+            cfn=cfn, 
+            _lambda=_l, 
+            regularized=True, 
+            pi_T=PI_T,
+            actual_dcf=True,
+            model_name_error_plot=f'LINEAR_LOG_REG_lambda_{_l}',
+        )
+        print(f"min DCF LOGISTIC REGRESSION REG by {PI_T} with prior={PRIOR} and lambda={_l}:  {min_dcf_logreg:.3f}")
+        print(f"act DCF LOGISTIC REGRESSION REG by {PI_T} with prior={PRIOR} and lambda={_l}:  {act_dcf_logreg:.3f}\n")
+
+        ## Linear SVM
+        C = 1
+        min_dcf_linsvm, act_dcf_linsvm = lib.K_fold(
+            D_norm, 
+            L, 
+            SVMLinearClassifier, 
+            k=nr_kfold_split,
+            prior_cl_T=PRIOR, 
+            cfp=cfp, 
+            cfn=cfn, 
+            C=C, 
+            rebalanced=True, 
+            pi_T=PI_T,
+            actual_dcf=True,
+            model_name_error_plot=f'LINEAR_SVM_C_{C}_piT_{PI_T}',
+        )
+        print(f"min DCF LINEAR SVM with prior={PRIOR:.1f} and C={C}:  {min_dcf_linsvm:.3f}")
+        print(f"act DCF LINEAR SVM with prior={PRIOR:.1f} and C={C}:  {act_dcf_linsvm:.3f}\n") 
 
 if __name__ == '__main__':
     import app.libs.ml_lib as lib
@@ -364,7 +430,9 @@ if __name__ == '__main__':
 
     # svm_kernel_polynomial(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
-    gmm(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    # gmm(D, L, application_priors, nr_kfold_split, cfp, cfn)
+
+    actual_dcf(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
 
 
