@@ -442,15 +442,29 @@ def gaussianization(DTR, DTE):
             value = DTE[i,j]
             tot += (line<value).sum()
             tot += 1
-            rank = tot/(DTE.shape[1] + 2)
+            rank = tot/(DTR.shape[1] + 2)
             ranks_for_row.append(rank)
         gaussianized_data[i,:] = np.asarray(ranks_for_row)
 
     return sp.stats.norm.ppf(gaussianized_data)
 
-def z_normalization(D):
-    # subtract dataset mean from each sample and divide by standard deviation
-    return sp.stats.zscore(D, axis=1)
+
+def z_normalization(DTR, DTE=None):
+    """
+    Compute Z normalization on DTR,
+    if DTE is passed, DTR mean and std will be used on it
+    """
+     # subtract dataset mean from each sample and divide by standard deviation
+    mu_DTR = colv(DTR.mean(1))
+    std_DTR = colv(DTR.std(1))
+
+    DTR_z =  (DTR - mu_DTR) / std_DTR
+
+    DTE_z = None
+    if DTE is not None:
+        DTE_z = (DTE - mu_DTR) / std_DTR
+
+    return DTR_z, DTE_z
 
 def compute_Z(LTR):
     """
@@ -461,13 +475,16 @@ def compute_Z(LTR):
     Z[LTR == 0] = -1
     return Z
 
-def PCA(data, m:int):
+def PCA(DTR, m:int, DTE=None):
     """
+    DTE can also be the same of DTR in case of training
+    use DTE==DTE when ranking test data over training data
+    
     :m = nr of features to keep
     """
-    print(f'\n------------------------------\nApplying PCA using {m}/{data.shape[0]} features')
+    print(f'\n------------------------------\nApplying PCA using {m}/{DTR.shape[0]} features')
     # mean lung l'asse x
-    mu = data.mean(1)  # 1-d array
+    mu = DTR.mean(1)  # 1-d array
 
     ########## ----- ########
     ########## -------- ###########
@@ -481,7 +498,7 @@ def PCA(data, m:int):
     # subtract mean on each line along X axes
     ########## -------- ###########
     ########## ----- ########
-    DC = data - mu  # DC = matrix of centered data
+    DC = DTR - mu  # DC = matrix of centered DTR
 
     ########## ----- ########
     ########## -------- ###########
@@ -534,9 +551,12 @@ def PCA(data, m:int):
     # yi = P^T * xi
     ########## -------- ###########
     ########## ----- ########
-    # P.t.shape = (2, 4), data.shape = (4, 150)
-    DProjList = np.dot(P.T, data)  # shape (2, 150)
-    return DProjList
+    # P.t.shape = (2, 4), DTR.shape = (4, 150)
+    DTR_ProjList = np.dot(P.T, DTR)  # shape (2, 150)
+    DTE_ProjList = None
+    if DTE is not None: # if DTE, use projection from DTR to DTE
+        DTE_ProjList = np.dot(P.T, DTE)  # shape (2, 150)
+    return DTR_ProjList, DTE_ProjList
 
 def spilt_K_fold(D, L, k:int, seed=0) -> Yield(Tuple):
     """
@@ -604,7 +624,10 @@ def K_fold(
     D, 
     L, 
     classifier_class: BaseClassifier, 
+    z_norm:bool,
+    gaus:bool,
     k:int, 
+    pca_m:int=0,
     prior_cl_T:float=0.5, 
     cfp=1, 
     cfn=1, 
@@ -622,7 +645,10 @@ def K_fold(
         D (np.array): Whole Data
         L (np.array): Whole Labels
         classifier_class (BaseClassifier): an instance of BaseClassifier class
+        z_norm (bool): if True data will be Z normalized
+        gaus (bool): if True data will be gaussianized
         k (int): nr of folds
+        pca_m (int): if not None and if != nr of samples, will be used for PCA
         prior_cl_T (float, optional): Prior of class True (only binary tasks). Defaults to 0.5.
         cfp (int, optional): Cost for False Positive. Defaults to 1.
         cfn (int, optional): Cost for False Negative. Defaults to 1.
@@ -660,6 +686,16 @@ def K_fold(
             np.save(file_DVA_pulsar, DVA)
             np.save(file_LVA_pulsar, LVA)
         '''
+        if z_norm:
+            # print('applying z norm')
+            DTR, DVA = z_normalization(DTR, DVA)
+        if gaus:
+            # print('applying gaussianization')
+            DVA = gaussianization(DTR, DVA)
+        if pca_m is not None and pca_m != DTR.shape[0]:
+            # print('applying pca')
+            DTR, DVA = PCA(DTR, pca_m, DTE=DVA)
+
         classifier: BaseClassifier = classifier_class(DTR, LTR)
         classifier.compute_score(DVA, LVA, **classifier_kwargs)
         tot_scores.append(classifier.scores)
@@ -682,8 +718,6 @@ def K_fold(
     classifier.scores = tot_scores
     # classifier.train(classes_prior) 
 
-    # llr = classifier.compute_llr()
-    # import ipdb; ipdb.set_trace()
     min_dcf = compute_min_DCF(
         scores=classifier.scores,
         labels=tot_LVA,

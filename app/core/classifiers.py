@@ -244,7 +244,6 @@ class LogisticRegressionClassifier(BaseClassifier):
                     (np.logaddexp(0, -S[:,Z==-1] * Z[Z==-1]) * (1-pi_T)) / (Z==-1).sum()
                 ).sum()
                 res = _lambda * 0.5 * np.linalg.norm(w)**2 + cross_entropy_pos2 + cross_entropy_neg2
-                # import ipdb; ipdb.set_trace()
                 return res
             # now compute          """(1/n)SUM(1 to n){ log(1 + exp^(-zi(w^Txi + b))) }"""
             # with the previous res """(1/n)SUM(1 to n){ log(1 + exp^(-zi(    S    ))) }"""
