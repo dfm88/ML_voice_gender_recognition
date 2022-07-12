@@ -387,7 +387,7 @@ def actual_dcf(D, L, application_priors, nr_kfold_split, cfp, cfn):
             rebalanced=True, 
             pi_T=PI_T,
             actual_dcf=True,
-            model_name_error_plot=f'LINEAR_SVM_C_{C}_piT_{PI_T}',
+            model_name_error_plot=f'LINEAR_SVM_C_{C}',
         )
         print(f"min DCF LINEAR SVM with prior={PRIOR:.1f} and C={C}:  {min_dcf_linsvm:.3f}")
         print(f"act DCF LINEAR SVM with prior={PRIOR:.1f} and C={C}:  {act_dcf_linsvm:.3f}\n") 
