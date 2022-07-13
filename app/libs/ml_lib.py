@@ -1,4 +1,5 @@
 import sys
+import uuid
 sys.path.append('.')
 from ast import Yield
 from typing import List, Optional, Tuple
@@ -853,6 +854,44 @@ def bayes_error_plot(scores, labels, model_name='', scores_rebalanced=None, labe
     plt.title(f"{model_name}")
     plt.legend(legend_list)
     plt.savefig(f'plots/BAYES_ERROR/{model_name}.jpg', bbox_inches="tight")
+
+def bayes_error_plot_multiple(scores_list:list, labels, model_name_list:list,  scores_rebalanced=None, labels_rebalanced=None, name_rebalanced=''):
+    """
+    computes the Theoretical and Ideal Bayes errors and plot them
+    """
+    
+    if len(scores_list) != len(model_name_list):
+        print('ERROR in plotting bayes error plot')
+        return
+    legend_list = []
+
+    plt.figure()
+    p = np.linspace(-3, 3, 21)
+    colors = ['r', 'b', 'g', 'k', 'c', 'm', 'y']
+    for (scores, model_name) in zip(scores_list, model_name_list):
+        legend_list += [f'act DCF {model_name}']
+        legend_list += [f'min DCF {model_name}']
+        color = colors.pop(0)
+        plt.plot(p, bayes_error(p, scores, labels, minCost=False), color=color, linestyle='dashed')
+        plt.plot(p, bayes_error(p, scores, labels, minCost=True), color=color)
+
+    if scores_rebalanced is not None and labels_rebalanced is not None:
+        color = colors.pop(0)
+        legend_list += [f'act DCF recalibrated {name_rebalanced}']
+        legend_list += [f'min DCF recalibrated {name_rebalanced}']
+        plt.plot(p, bayes_error(p, scores_rebalanced, labels_rebalanced, minCost=False), color=color, linestyle='dashed')
+        plt.plot(p, bayes_error(p, scores_rebalanced, labels_rebalanced, minCost=True), color=color)
+
+    plt.xlabel(r'$\log \dfrac{\widetilde{ \pi }}{1-\widetilde{ \pi }}$')
+    plt.ylabel('DCF')
+    plt.title(f"DCF comparison")
+    plt.legend(legend_list)
+    plt.savefig(f'plots/BAYES_ERROR/DCF_comparison_{uuid.uuid1()}.jpg', bbox_inches="tight")
+
+
+
+
+
 
 ################################################
 #############   DCF END    ###################################################

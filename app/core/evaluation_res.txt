@@ -1,0 +1,81 @@
+        #       # USING DATASET ----  voice 
+
+********  STARTING EVALUATION ***********
+
+
+------------------------------- PRIOR 0.5
+GMM computing scores with type=tied_cov, nr_cluster=4
+EVALUATION: GMM TIED (4) prior 0.5, nr_comp. 4, min DCF 0.0295, act DCF 0.0315
+
+pi_TR 0.5
+EVALUATION: LOGISTIC REGRESSION prior 0.5, pi_T 0.5, lambda 0 min DCF 0.052500000000000005, act DCF 0.05499999999999999
+
+EVALUATION: LINEAR SVM prior 0.5, pi_T 0.5, C 1, min DCF 0.051000000000000004, act DCF 0.053
+
+EVALUATION: LINEAR SVM (CALIBRATED) prior DVM 0.5, prior LR recalibrate 0.5, pi_T 0.5, C 1, min DCF 0.051500000000000004, act DCF 0.054
+
+pi_TR 0.9
+EVALUATION: LOGISTIC REGRESSION prior 0.5, pi_T 0.9, lambda 0 min DCF 0.053, act DCF 0.097
+
+EVALUATION: LINEAR SVM prior 0.5, pi_T 0.9, C 1, min DCF 0.051000000000000004, act DCF 0.10550000000000001
+
+EVALUATION: LINEAR SVM (CALIBRATED) prior DVM 0.5, prior LR recalibrate 0.5, pi_T 0.9, C 1, min DCF 0.0505, act DCF 0.056999999999999995
+
+pi_TR 0.1
+EVALUATION: LOGISTIC REGRESSION prior 0.5, pi_T 0.1, lambda 0 min DCF 0.052000000000000005, act DCF 0.09150000000000001
+
+EVALUATION: LINEAR SVM prior 0.5, pi_T 0.1, C 1, min DCF 0.052500000000000005, act DCF 0.10300000000000001
+
+EVALUATION: LINEAR SVM (CALIBRATED) prior DVM 0.5, prior LR recalibrate 0.5, pi_T 0.1, C 1, min DCF 0.052500000000000005, act DCF 0.053
+
+
+------------------------------- PRIOR 0.9
+GMM computing scores with type=tied_cov, nr_cluster=4
+EVALUATION: GMM TIED (4) prior 0.9, nr_comp. 4, min DCF 0.092, act DCF 0.09600000000000002
+
+pi_TR 0.5
+EVALUATION: LOGISTIC REGRESSION prior 0.9, pi_T 0.5, lambda 0 min DCF 0.13300000000000003, act DCF 0.14650000000000002
+
+EVALUATION: LINEAR SVM prior 0.9, pi_T 0.5, C 1, min DCF 0.131, act DCF 0.2795
+
+EVALUATION: LINEAR SVM (CALIBRATED) prior DVM 0.9, prior LR recalibrate 0.5, pi_T 0.5, C 1, min DCF 0.051500000000000004, act DCF 0.054
+
+pi_TR 0.9
+EVALUATION: LOGISTIC REGRESSION prior 0.9, pi_T 0.9, lambda 0 min DCF 0.1315, act DCF 0.2155
+
+EVALUATION: LINEAR SVM prior 0.9, pi_T 0.9, C 1, min DCF 0.127, act DCF 0.5505
+
+EVALUATION: LINEAR SVM (CALIBRATED) prior DVM 0.9, prior LR recalibrate 0.5, pi_T 0.9, C 1, min DCF 0.0505, act DCF 0.056999999999999995
+
+pi_TR 0.1
+EVALUATION: LOGISTIC REGRESSION prior 0.9, pi_T 0.1, lambda 0 min DCF 0.136, act DCF 0.2820000000000001
+
+EVALUATION: LINEAR SVM prior 0.9, pi_T 0.1, C 1, min DCF 0.1405, act DCF 0.171
+
+EVALUATION: LINEAR SVM (CALIBRATED) prior DVM 0.9, prior LR recalibrate 0.5, pi_T 0.1, C 1, min DCF 0.052500000000000005, act DCF 0.053
+
+
+------------------------------- PRIOR 0.1
+GMM computing scores with type=tied_cov, nr_cluster=4
+EVALUATION: GMM TIED (4) prior 0.1, nr_comp. 4, min DCF 0.08, act DCF 0.088
+
+pi_TR 0.5
+EVALUATION: LOGISTIC REGRESSION prior 0.1, pi_T 0.5, lambda 0 min DCF 0.1355, act DCF 0.14599999999999996
+
+EVALUATION: LINEAR SVM prior 0.1, pi_T 0.5, C 1, min DCF 0.141, act DCF 0.251
+
+EVALUATION: LINEAR SVM (CALIBRATED) prior DVM 0.1, prior LR recalibrate 0.5, pi_T 0.5, C 1, min DCF 0.051500000000000004, act DCF 0.054
+
+pi_TR 0.9
+EVALUATION: LOGISTIC REGRESSION prior 0.1, pi_T 0.9, lambda 0 min DCF 0.142, act DCF 0.27349999999999997
+
+EVALUATION: LINEAR SVM prior 0.1, pi_T 0.9, C 1, min DCF 0.15349999999999997, act DCF 0.1715
+
+EVALUATION: LINEAR SVM (CALIBRATED) prior DVM 0.1, prior LR recalibrate 0.5, pi_T 0.9, C 1, min DCF 0.0505, act DCF 0.056999999999999995
+
+pi_TR 0.1
+EVALUATION: LOGISTIC REGRESSION prior 0.1, pi_T 0.1, lambda 0 min DCF 0.1385, act DCF 0.21249999999999997
+
+EVALUATION: LINEAR SVM prior 0.1, pi_T 0.1, C 1, min DCF 0.143, act DCF 0.564
+
+EVALUATION: LINEAR SVM (CALIBRATED) prior DVM 0.1, prior LR recalibrate 0.5, pi_T 0.1, C 1, min DCF 0.052500000000000005, act DCF 0.053

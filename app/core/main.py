@@ -734,8 +734,18 @@ def score_calibration(D, L, classifier:'BaseClassifier', nr_kfold_split, cfp, cf
     
 
 
+def _save_evaluation_scores(scores, file_name):
+    if not os.path.exists(f'data/{file_name}.npy'):
+        np.save(f'data/{file_name}', scores)
+
+
 def evaluation(DTR, LTR, cfp, cfn):
     print('********  STARTING EVALUATION ***********\n')
+    target_prior = 0.5
+    GMM_scores_file_name = 'evaluation_scores_GMM_tied_4'
+    LOGREG_scores_file_name = 'evaluation_scores_LOGREG'
+    LSVM_not_cal_scores_file_name = 'evaluation_scores_SVM_not_calibrated'
+    LSVM_cal_scores_file_name = 'evaluation_scores_SVM_calibrated'
 
     DTE, LTE = lib.load_binary_data(TEST_DATA_FILE, NR_FEATURES)
 
@@ -767,6 +777,8 @@ def evaluation(DTR, LTR, cfp, cfn):
             Cfn=cfn,
             Cfp=cfp
         )
+        if prior_cl_T == target_prior:
+            _save_evaluation_scores(gmm.scores, GMM_scores_file_name)
         print(f'EVALUATION: GMM TIED (4) prior {prior_cl_T}, nr_comp. {nr_clusters}, min DCF {min_dcf}, act DCF {act_dcf}\n')
 
         for pi_T in application_priors:
@@ -792,10 +804,12 @@ def evaluation(DTR, LTR, cfp, cfn):
                 Cfn=cfn,
                 Cfp=cfp
             )
+            if prior_cl_T == target_prior == pi_T:
+                _save_evaluation_scores(lr.scores, LOGREG_scores_file_name)
             print(f'EVALUATION: LOGISTIC REGRESSION prior {prior_cl_T}, pi_T {pi_T}, lambda {_lambda} min DCF {min_dcf}, act DCF {act_dcf}\n')
 
 
-            ### LINEAR SVM CLASSIFIER
+            ## LINEAR SVM CLASSIFIER
             C = 1
             lsvm = SVMLinearClassifier(DTR, LTR)
             lsvm.compute_score(DTE, LTE, C=C, rebalanced=True, pi_T=pi_T)
@@ -815,10 +829,13 @@ def evaluation(DTR, LTR, cfp, cfn):
                 Cfn=cfn,
                 Cfp=cfp
             )
+            if prior_cl_T == target_prior == pi_T:
+                _save_evaluation_scores(lsvm.scores, LSVM_not_cal_scores_file_name)
             print(f'EVALUATION: LINEAR SVM prior {prior_cl_T}, pi_T {pi_T}, C {C}, min DCF {min_dcf}, act DCF {act_dcf}\n')
             # recalibrate linear SVM
+            prior_lr_recalibrator = 0.5
             min_dcf_reb, act_dcf_reb, klass_reb = lib.K_fold(
-                D=lib.rowv(lsvm.scores), 
+                D=lib.rowv(lsvm.scores), # scores of SVM as data input for LR
                 L=LTE, 
                 classifier_class=LogisticRegressionClassifier, 
                 actual_dcf=True, 
@@ -826,15 +843,45 @@ def evaluation(DTR, LTR, cfp, cfn):
                 gaus=False, 
                 pca_m=None, 
                 k=nr_kfold_split, 
-                prior_cl_T=prior_cl_T, 
+                prior_cl_T=prior_lr_recalibrator, 
                 cfp=cfp, 
                 cfn=cfn,
                 _lambda=0, 
-                regularized=True, 
-                pi_T=pi_T,
+                regularized=False, 
             )
-            print(f'EVALUATION: LINEAR SVM (CALIBRATED) prior {prior_cl_T}, pi_T {pi_T}, C {C}, min DCF {min_dcf_reb}, act DCF {act_dcf_reb}\n')
+            if prior_cl_T == target_prior == pi_T:
+                _save_evaluation_scores(klass_reb.scores, LSVM_cal_scores_file_name)
+                _save_evaluation_scores(klass_reb.L, LSVM_cal_scores_file_name+'_labels')
+            print(f'EVALUATION: LINEAR SVM (CALIBRATED) prior DVM {prior_cl_T}, prior LR recalibrate {prior_lr_recalibrator}, pi_T {pi_T}, C {C}, min DCF {min_dcf_reb}, act DCF {act_dcf_reb}\n')
 
+    GMM_scores = np.load(f'data/{GMM_scores_file_name}.npy')
+    LOGREG_scores = np.load(f'data/{LOGREG_scores_file_name}.npy')
+    LSVM_not_cal_scores = np.load(f'data/{LSVM_not_cal_scores_file_name}.npy')
+    LSVM_cal_scores = np.load(f'data/{LSVM_cal_scores_file_name}.npy')
+    LSVM_cal_scores_labels = np.load(f'data/{LSVM_cal_scores_file_name}_labels.npy')
+
+    lib.bayes_error_plot_multiple(
+        scores_list=[GMM_scores, LOGREG_scores, LSVM_not_cal_scores],
+        labels=LTE,
+        model_name_list=[GMM_scores_file_name, LOGREG_scores_file_name, LSVM_not_cal_scores_file_name]
+    )
+
+
+    lib.bayes_error_plot_multiple(
+        scores_list=[GMM_scores, LOGREG_scores],
+        labels=LTE,
+        model_name_list=[GMM_scores_file_name, LOGREG_scores_file_name],
+        scores_rebalanced=LSVM_cal_scores,
+        labels_rebalanced=LSVM_cal_scores_labels,
+        name_rebalanced=LSVM_cal_scores_file_name,
+    )
+
+    lib.ROC_plot_binary(
+        scores_list=[GMM_scores, LOGREG_scores, LSVM_not_cal_scores],
+        labels=LTE,
+        model_name_list=[GMM_scores_file_name, LOGREG_scores_file_name, LSVM_not_cal_scores_file_name]
+
+    )
 
 
 
