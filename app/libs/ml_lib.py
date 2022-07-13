@@ -888,6 +888,57 @@ def bayes_error_plot_multiple(scores_list:list, labels, model_name_list:list,  s
     plt.legend(legend_list)
     plt.savefig(f'plots/BAYES_ERROR/DCF_comparison_{uuid.uuid1()}.jpg', bbox_inches="tight")
 
+def ROC_plot_binary(scores_list:list, labels, model_name_list:list):
+    if len(scores_list) != len(model_name_list):
+        print('ERROR in plotting bayes error plot')
+        return
+    legend_list = ["act DCF", "min DCF"]
+    legend_list = []
+    plt.figure()
+    p = np.linspace(-3, 3, 21)
+    colors = ['r', 'b', 'g', 'k', 'c', 'm', 'y']
+    for (scores, model_name) in zip(scores_list, model_name_list):
+        legend_list += [f'act DCF {model_name}']
+        legend_list += [f'min DCF {model_name}']
+        color = colors.pop(0)
+
+        # the tresholds are the llratios (the scores)
+        tresholds = np.array(scores) # create a copy
+        tresholds.sort()
+        tresholds = np.concatenate([
+            np.array([-np.inf]),
+            tresholds,
+            np.array([np.inf]),
+        ])
+        FPR = np.zeros(tresholds.size)
+        TPR = np.zeros(tresholds.size)
+        FNR = np.zeros(tresholds.size)
+        # CONFUSION MATRIX (BINARY)          
+        #    ├─────────├
+        #    │ TN │ FN |
+        #    │ FP │ TP |
+        #    └─────────└
+        # loop over all tresholds, for each one compute the 
+        # confusion matrix and save into an array the coordinates
+        # of the ROC (FPR, TPR) caluclated from the Conf Matrix
+        for idx, t in enumerate(tresholds):
+            Pred = np.int32(scores > t)
+            # prepare the confusion matrix for binary problem 2x2
+            Conf = np.zeros((2, 2))
+            # compute the Confusion Matrix as explained in comments in the `def log_domain` function
+            for i in range(2):
+                for j in range(2):
+                    Conf[i,j] = ((Pred == i) * (labels == j)).sum()
+
+            # TPR[idx] = Conf[1,1] / (Conf[1,1] + Conf[0,1])
+            FPR[idx] = Conf[1,0] / (Conf[1,0] + Conf[0,0])
+            FNR[idx] = Conf[0,1] / (Conf[1,1] + Conf[0,1])
+
+        # plot ROC curve
+        # plt.plot(FPR, TPR)
+        plt.plot(FPR, FNR, color=color)
+    plt.legend(legend_list)
+    plt.savefig(f"ROC_{uuid.uuid1()}.jpg")
 
 
 
@@ -897,14 +948,4 @@ def bayes_error_plot_multiple(scores_list:list, labels, model_name_list:list,  s
 #############   DCF END    ###################################################
 ################################################
 
-
-
-
-# # XXX main
-# if __name__ == '__main__':
-#     data, data_labels = load_iris()
-
-#     data = np.array(data) # matrix put inside min list in column
-#     print('raw data', data, sep='\n', end='\n\n')
-#     print(data.size, data.shape)
 

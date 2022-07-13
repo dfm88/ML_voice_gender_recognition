@@ -7,16 +7,9 @@ import numpy as np
 import os
 import pylab
 
-PROVAAAAAAAAA = 'voice'
-
-if PROVAAAAAAAAA == 'voice':
-    TRAINING_DATA_FILE = 'Gender_Detection/Train.txt'
-    TEST_DATA_FILE = 'Gender_Detection/Test.txt'
-    NR_FEATURES = 12
-elif PROVAAAAAAAAA == 'pulsar':
-    TRAINING_DATA_FILE = 'Pulsar_Detection/Train.txt'
-    TEST_DATA_FILE = 'Pulsar_Detection/Test.txt'
-    NR_FEATURES = 8
+TRAINING_DATA_FILE = 'Gender_Detection/Train.txt'
+TEST_DATA_FILE = 'Gender_Detection/Test.txt'
+NR_FEATURES = 12
 
 
 def plotting(D, L):
@@ -876,12 +869,7 @@ def evaluation(DTR, LTR, cfp, cfn):
         name_rebalanced=LSVM_cal_scores_file_name,
     )
 
-    lib.ROC_plot_binary(
-        scores_list=[GMM_scores, LOGREG_scores, LSVM_not_cal_scores],
-        labels=LTE,
-        model_name_list=[GMM_scores_file_name, LOGREG_scores_file_name, LSVM_not_cal_scores_file_name]
 
-    )
 
 
 
@@ -898,68 +886,71 @@ if __name__ == '__main__':
         SVMKernelPolynomialClassifier,
         GmmClassifier,
     )
-    print('\t#\t# USING DATASET ---- ', PROVAAAAAAAAA, '\n')
-
     D, L = lib.load_binary_data(TRAINING_DATA_FILE, NR_FEATURES)
 
-    # D, L = lib.load_iris_binary()
-    # D, L = lib.load_iris_binary_reduced(5)
     application_priors = [0.5, 0.9, 0.1]
-    # D_norm, _ = lib.z_normalization(D)
-    # D_norm_gau = lib.gaussianization(D_norm, D_norm)
 
     nr_kfold_split = 4
     cfp = 1
     cfn = 1
 
+    #### PLOTTING
+    plotting(D, L)
 
-    # plotting(D, L)
+    #### MVG HYPERPARAMETER TUNING AND TRAINING
+    gaussian(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
-    # gaussian(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    #### LOG REG HYPERPARAMETER TUNING AND TRAINING
+    linear_logistic_regression(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
-    # linear_logistic_regression(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    #### SVM LINEAR HYPERPARAMETER TUNING AND TRAINING
+    svm_linear(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
-    # svm_linear(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    #### SVM RBF KERNEL HYPERPARAMETER TUNING AND TRAINING
+    svm_kernel_rbf(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
-    # svm_kernel_rbf(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    #### SVM POLY KERNEL HYPERPARAMETER TUNING AND TRAINING
+    svm_kernel_polynomial(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
-    # svm_kernel_polynomial(D, L, application_priors, nr_kfold_split, cfp, cfn)
-
-    # gmm(D, L, application_priors, nr_kfold_split, cfp, cfn)
-
-    # actual_dcf(D, L, application_priors, nr_kfold_split, cfp, cfn)
+    #### GMM HYPERPARAMETER TUNING AND TRAINING
+    gmm(D, L, application_priors, nr_kfold_split, cfp, cfn)
 
 
-    # score_calibrate_SVM = partial(score_calibration, classifier=SVMLinearClassifier)
-    # score_calibrate_SVM(
-    #     D=D, L=L, 
-    #     nr_kfold_split=nr_kfold_split, 
-    #     cfp=cfp, cfn=cfn, 
-    #     model_name='LINEAR_SVM_C_1',
-    # )
+    #### COMPUTING ACTUAL DCF
+    actual_dcf(D, L, application_priors, nr_kfold_split, cfp, cfn)
+
+    #### SCORE CALIBRATION
+    score_calibrate_SVM = partial(score_calibration, classifier=SVMLinearClassifier)
+    score_calibrate_SVM(
+        D=D, L=L, 
+        nr_kfold_split=nr_kfold_split, 
+        cfp=cfp, cfn=cfn, 
+        model_name='LINEAR_SVM_C_1',
+    )
     
-    # score_calibrate_GMM = partial(score_calibration, classifier=GmmClassifier)
-    # score_calibrate_GMM(
-    #     D=D, 
-    #     L=L, 
-    #     nr_kfold_split=nr_kfold_split, 
-    #     cfp=cfp, cfn=cfn, 
-    #     model_name='GMM_tied_cov_4_comp', 
-    #     algorithm='tied_cov', 
-    #     nr_clusters=4,
-    # )
+    score_calibrate_GMM = partial(score_calibration, classifier=GmmClassifier)
+    score_calibrate_GMM(
+        D=D, 
+        L=L, 
+        nr_kfold_split=nr_kfold_split, 
+        cfp=cfp, cfn=cfn, 
+        model_name='GMM_tied_cov_4_comp', 
+        algorithm='tied_cov', 
+        nr_clusters=4,
+    )
 
-    # score_calibrate_LOGREG = partial(score_calibration, classifier=LogisticRegressionClassifier)
-    # score_calibrate_LOGREG(
-    #     D=D, 
-    #     L=L, 
-    #     nr_kfold_split=nr_kfold_split, 
-    #     cfp=cfp, 
-    #     cfn=cfn, 
-    #     model_name='LINEAR_LOG_REG_lambda_0', 
-    #     _lambda=0,
-    # )
+    score_calibrate_LOGREG = partial(score_calibration, classifier=LogisticRegressionClassifier)
+    score_calibrate_LOGREG(
+        D=D, 
+        L=L, 
+        nr_kfold_split=nr_kfold_split, 
+        cfp=cfp, 
+        cfn=cfn, 
+        model_name='LINEAR_LOG_REG_lambda_0', 
+        _lambda=0,
+    )
 
+    #### EVALUATION
     evaluation(DTR=D, LTR=L, cfp=cfp, cfn=cfn)
 
 

@@ -4,3 +4,4 @@ my*/
 .history
 __pycache__/
 *.pyc
+.vscode/
